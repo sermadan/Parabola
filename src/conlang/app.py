@@ -1,4 +1,4 @@
-import yaml, os, shutil, json
+import os, json
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import conlang.paths as paths
 from conlang.lexicon import generator
@@ -7,7 +7,7 @@ from conlang.utils import utils
 app = Flask(__name__)
 app.secret_key = "conlanger_secret_key"
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..\..'))
 PROJECTS_ROOT = os.path.join(BASE_DIR, 'projects')
 os.makedirs(PROJECTS_ROOT, exist_ok=True)
 
@@ -38,20 +38,30 @@ def inject_globals():
 # 1. 專案管理 (Project Management)
 # ==========================================
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def portal():
-    return render_template('portal.html')
-
-@app.route('/projects', methods=['GET', 'POST'])
-def manage_projects():
     if request.method == 'POST':
         project_name = request.form.get('project_name', '').strip()
         if project_name:
+            # 自動建立專案目錄
+            project_path = os.path.join(PROJECTS_ROOT, project_name)
+            if not os.path.exists(project_path):
+                os.makedirs(project_path)
+            
             session['current_project'] = project_name
-            return redirect(url_for('manage_projects'))
+            # 直接重導向回首頁即可看到新專案
+            return redirect(url_for('portal'))
 
+    # 確保專案根目錄存在
+    if not os.path.exists(PROJECTS_ROOT):
+        os.makedirs(PROJECTS_ROOT)
+        
     all_projects = [d for d in os.listdir(PROJECTS_ROOT) if os.path.isdir(os.path.join(PROJECTS_ROOT, d))]
-    return render_template('projects.html', projects=all_projects, current=session.get('current_project'))
+    
+    # 渲染 portal.html，傳入專案列表與當前 session 中的專案
+    return render_template('portal.html', 
+                           projects=all_projects, 
+                           current=session.get('current_project'))
 
 @app.route('/select_project/<name>')
 def select_project(name):

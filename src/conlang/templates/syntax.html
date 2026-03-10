@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block extra_css %}
-    {# 這裡現在只引用整合後的 components.css (假設你已將其內容放入或引用) #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <style>
         /* 僅保留頁面專屬的微調，其餘全部移入 components.css */

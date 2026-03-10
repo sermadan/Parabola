@@ -40,6 +40,20 @@
 "ui","label_syl_range","Syllables (Min - Max)","音節數範圍"
 "ui","label_swadesh_list","Translation List","翻譯清單"
 "ui","label_lexicon_sandbox","Lexicon Sandbox","詞彙沙盒"
+
+
+"ui","label_project_portal","Project Portal","專案門戶"
+"ui","label_new_workspace","Launch New Project","啟動新專案"
+"ui","label_existing_workspaces","Existing Workspaces","現有工作區清單"
+"ui","label_total_projects","Total Projects","專案總數"
+"ui","label_local_workspace","Local Workspace","在地工作區"
+"ui","btn_create_and_switch","Create & Switch","建立並切換"
+"ui","btn_switch_to","Switch to This","切換至此"
+"ui","msg_no_workspaces","No workspaces found. Create one to start!","目前沒有任何工作區。立即建立一個吧！"
+"ui","status_in_use","Active","使用中"
+"ui","label_project_name","Project Name","專案名稱"
+"ui","label_project_name_hint","Create a fresh environment","建立新的開發環境"
+
 "ui","btn_run_generator","Run Generator","開始生成"
 "ui","hint_swadesh","If provided, word count will match this list.","若提供清單，生成數量將與清單一致。"
 "ui","hint_gen_empty","Configure patterns and generate some words.","配置模式並生成一些單字。"

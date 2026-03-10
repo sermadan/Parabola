@@ -5,38 +5,53 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="section-header">
-        <h2>✨ 建立新專案</h2>
-    </div>
-    <form action="/projects" method="POST" style="display: flex; gap: 10px; align-items: flex-end;">
-        <div style="flex-grow: 1;">
-            <label class="label-caps">專案名稱 (僅限英文字母與數字)</label>
-            <input type="text" name="project_name" required 
-                   style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);"
-                   placeholder="例如: Elvish_2024">
+<div class="grid-auto-layout" style="margin-top: 20px;">
+
+    <div class="card" style="border: 1px dashed var(--primary); background: var(--primary-glass); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <h3 style="margin: 0 0 10px 0; color: var(--primary);">✨ <span data-i18n="label_create_new_project"></span></h3>
+            <p class="label-caps" data-i18n="label_project_name_hint"></p>
         </div>
-        <button type="submit" class="btn btn-save">建立並切換</button>
-    </form>
-</div>
+        
+        <form action="{{ url_for('portal') }}" method="POST" style="margin-top: 15px;">
+            <input type="text" name="project_name" required 
+                   class="inplace-input" 
+                   style="margin-bottom: 12px; width: 100%;"
+                   placeholder="e.g. Project_A"
+                   pattern="[a-zA-Z0-9_-]+">
+            <button type="submit" class="btn btn-save" style="width: 100%;">
+                <span data-i18n="btn_create_and_switch"></span>
+            </button>
+        </form>
+    </div>
 
-<div class="section-header">
-    <h2>📂 現有專案列表</h2>
-</div>
-
-<div class="grid-flex">
     {% for p in projects %}
-    <div class="card" style="width: calc(33.33% - 10px); min-width: 250px; position: relative; border: {% if p == current %}2px solid var(--primary){% else %}1px solid var(--border){% endif %};">
+    <div class="card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between; {% if p == current %}border: 2px solid var(--primary); background: var(--primary-glass);{% endif %}">
+        
         {% if p == current %}
-            <span style="position: absolute; top: 10px; right: 10px; background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;">使用中</span>
+            <div class="count-pill" style="position: absolute; top: 12px; right: 12px; height: 24px; padding: 0 8px; font-size: 0.7rem;">
+                <span data-i18n="status_in_use"></span>
+            </div>
         {% endif %}
-        <h3 style="margin: 0 0 15px 0;">{{ p }}</h3>
-        <div style="display: flex; gap: 8px;">
-            <a href="{{ url_for('select_project', name=p) }}" class="btn btn-outline" style="flex: 1;">切換至此</a>
+
+        <div>
+            <h3 style="margin: 0 0 5px 0; color: var(--text-main); font-size: 1.25rem;">{{ p }}</h3>
+            <span class="label-caps">Project Repository</span>
+        </div>
+
+        <div class="action-group" style="margin-top: 25px;">
+            <a href="{{ url_for('select_project', name=p) }}" 
+               class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" 
+               style="width: 100%;">
+                <span data-i18n="btn_switch_to"></span>
+            </a>
         </div>
     </div>
     {% else %}
-    <p style="color: var(--text-sub);">目前還沒有任何專案。</p>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; opacity: 0.6;">
+        <p class="label-caps" data-i18n="msg_no_projects"></p>
+    </div>
     {% endfor %}
+
 </div>
 {% endblock %}
