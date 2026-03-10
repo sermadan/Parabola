@@ -12,13 +12,48 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <style>/* 分類列表容器 */
+/* 分類列表容器 */
+#category-list {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--bg-surface);
+}
+
+/* 輸入框行樣式 */
+.input-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.cat-code-input {
+    width: 60px; /* 縮小 Code 寬度 */
+    font-weight: bold;
+    text-align: center;
+}
+
+.cat-comment-input {
+    flex: 1; /* 讓註解自動填滿空間 */
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+
+</style>
 {% endblock %}
 
 {% block content %}
 
     <form id="main-form" method="POST" action="ipa_management">
+        {% set phonology = config.phonology | default({}) %}
+        
         <input type="hidden" name="custom_order_data" id="hiddenCustomOrder" 
-               value="{{ config.phonology.custom_order | default('') }}">
+               value="{{ phonology.custom_order | default('') }}">
 
         <div class="tabs">
             <button type="button" class="tab-btn" data-type="overall" onclick="switchMainTab('overall')">
@@ -43,7 +78,7 @@
                 </button>
                 
                 <input type="hidden" name="custom_categories_json" id="hiddenCategoriesJson" 
-                    value='{{ config.phonology.categories | tojson | safe if config.phonology.categories else "{}" }}'>
+                    value='{{ phonology.categories | tojson | safe if phonology.categories else "{}" }}'>
             </div>
 
             <div class="group-header"></div>
@@ -78,8 +113,24 @@
     <script src="{{ url_for('static', filename='js/ipa_management.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const ipaData = {{ ipa|tojson|safe }};
-            const configData = {{ config|tojson|safe }};
+            const ipaData = {{ ipa|tojson|safe if ipa else 'null' }};
+            const configData = {{ config|tojson|safe if config else 'null' }};
+
+            const hasIPA = ipaData && Object.keys(ipaData).length > 0;
+            
+            // 修正：檢查 inventory_consonants 和 inventory_vowels，這才是你儲存的 Key
+            const phon = configData?.phonology;
+            const hasPhonology = phon && (
+                (phon.inventory_consonants && phon.inventory_consonants.length > 0) || 
+                (phon.inventory_vowels && phon.inventory_vowels.length > 0)
+            );
+
+            if (!hasIPA || !hasPhonology) {
+                console.log("Debug - Config:", configData); // 偵錯用
+                alert("⚠️ 目前還沒有設定音標資料！\n請先到「音標系統」頁面選取你的 IPA 符號並儲存。");
+                window.location.href = "{{ url_for('ipa_tool') }}"; 
+                return;
+            }
             
             initAll(ipaData, configData);
             initCategories();

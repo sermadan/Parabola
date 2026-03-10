@@ -46,7 +46,9 @@
 "ui","label_new_workspace","Launch New Project","啟動新專案"
 "ui","label_existing_workspaces","Existing Workspaces","現有工作區清單"
 "ui","label_total_projects","Total Projects","專案總數"
-"ui","label_local_workspace","Local Workspace","在地工作區"
+"ui","label_local_workspace","Local Workspace","本地工作區"
+"ui","label_comment","Extra Comment","註解"
+
 "ui","btn_create_and_switch","Create & Switch","建立並切換"
 "ui","btn_switch_to","Switch to This","切換至此"
 "ui","msg_no_workspaces","No workspaces found. Create one to start!","目前沒有任何工作區。立即建立一個吧！"
@@ -58,6 +60,7 @@
 "ui","hint_swadesh","If provided, word count will match this list.","若提供清單，生成數量將與清單一致。"
 "ui","hint_gen_empty","Configure patterns and generate some words.","配置模式並生成一些單字。"
 "ui","hint_click_save","Click to Save to Dictionary","點擊儲存至字典"
+"ui","hint_drag_sort","Drag to Sort The Items","拖曳以排序元素"
 "ui","status_total_items","Total items: ","總計項目："
 "ui","status_added_lexicon","✓ Added to Lexicon","✓ 已加入詞庫"
 

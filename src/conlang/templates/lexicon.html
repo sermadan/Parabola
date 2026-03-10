@@ -59,19 +59,20 @@
                 <label data-i18n="label_syllable_pattern"></label>
                 <textarea id="syllable" name="pattern" class="input-field" 
                         style="height: 120px; font-size: 0.85rem;" 
-                        placeholder="e.g., CV(C)" value="CVC"></textarea>
+                        placeholder="e.g., CV CVC">CV CVC</textarea>
+                <small style="color:#888; font-size: 0.7rem;">可輸入多組模式並以空格分隔</small>
             </div>
 
             <div class="config-group">
                 <label data-i18n="label_words_count"></label>
-                <input type="number" name="count" class="input-field" value="24" min="1" max="200">
+                <input type="number" name="count" class="input-field" value="10" min="1" max="200">
             </div>
 
             <div class="config-group">
                 <label data-i18n="label_syl_range"></label>
                 <div class="num-grid">
-                    <input type="number" name="min_syl" class="input-field" value="1" min="1">
-                    <input type="number" name="max_syl" class="input-field" value="2" min="1">
+                    <input type="number" name="min_syl" class="input-field" value="2" min="1">
+                    <input type="number" name="max_syl" class="input-field" value="4" max="30" min="1">
                 </div>
             </div>
 
@@ -85,7 +86,7 @@
 
             <button type="submit" class="btn-generate" id="genBtn">
                 <span class="loader" id="genLoader"></span>
-                <span id="btnText" data-i18n="btn_run_generator"></span>
+                <span id="btnText" data-i18n="btn_run_generator">✨ Run Generator</span>
             </button>
         </form>
     </aside>
@@ -113,30 +114,24 @@
     const resultsGrid = document.getElementById('resultsGrid');
     const swadeshInput = document.getElementById('swadeshList');
 
-    // 監聽生成表單提交
     genForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // 1. UI 進入 Loading 狀態
         genBtn.disabled = true;
         genLoader.style.display = 'inline-block';
         btnText.innerText = 'Generating...';
 
-        // 2. 收集表單數據
         const formData = new FormData(genForm);
         const payload = Object.fromEntries(formData.entries());
 
-        // 3. 處理 Swadesh List (過濾空行與前後空白)
         const swadeshRaw = swadeshInput.value;
         const swadeshArray = swadeshRaw.split('\n')
                                        .map(line => line.trim())
                                        .filter(line => line.length > 0);
         
-        // 將清單塞進 payload 傳給 Python
         payload.swadesh_list = swadeshArray;
 
         try {
-            // 4. 發送請求到你的 Python API
             const response = await fetch('/api/generate_words', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -146,7 +141,6 @@
             const data = await response.json();
 
             if (data.status === 'success') {
-                // 5. 渲染結果到頁面
                 renderWords(data.words);
                 document.getElementById('genStatus').innerText = `Total items: ${data.words.length}`;
             } else {
@@ -156,17 +150,12 @@
             console.error('Fetch error:', error);
             alert('Could not connect to the generation API.');
         } finally {
-            // 6. 恢復按鈕狀態
             genBtn.disabled = false;
             genLoader.style.display = 'none';
             btnText.innerText = '✨ Run Generator';
         }
     });
 
-    /**
-     * 將生成的單字物件渲染為 HTML 卡片
-     * @param {Array} words - 格式如 [{word: '...', translation: '...', pos: '...'}, ...]
-     */
     function renderWords(words) {
         resultsGrid.innerHTML = '';
         
@@ -178,29 +167,18 @@
         words.forEach((item) => {
             const card = document.createElement('div');
             card.className = 'word-card';
-            
-            // 根據你要求的 JSON 格式填充內容
             card.innerHTML = `
                 <div class="card-pos">${item.pos || 'noun'}</div>
                 <div class="card-word">${item.word}</div>
                 <div class="card-trans">${item.translation || '---'}</div>
                 <div class="add-hint">Click to Save to Dictionary</div>
             `;
-            
-            // 點擊卡片觸發儲存
             card.onclick = () => saveToDictionary(item, card);
-            
             resultsGrid.appendChild(card);
         });
     }
 
-    /**
-     * 調用後端現有的字典 API 進行儲存
-     * @param {Object} item - 單字物件
-     * @param {HTMLElement} cardElement - 對應的卡片 DOM 元素（用於顯示成功回饋）
-     */
     async function saveToDictionary(item, cardElement) {
-        // 防止重複點擊
         if (cardElement.dataset.saved === "true") return;
 
         try {
@@ -211,28 +189,22 @@
                     word: item.word,
                     pos: item.pos,
                     translation: item.translation,
-                    ipa: item.word // 假設生成的 word 就是 IPA 字串
+                    ipa: item.word 
                 })
             });
 
             const result = await res.json();
-            
             if (result.success) {
-                // UI 成功回饋
                 cardElement.dataset.saved = "true";
                 cardElement.style.borderColor = '#28a745';
                 cardElement.style.background = '#f0fff4';
-                
                 const hint = cardElement.querySelector('.add-hint');
                 hint.innerText = '✓ Added to Lexicon';
                 hint.style.background = '#28a745';
                 hint.style.transform = 'translateY(0)';
-            } else {
-                alert('Save failed: ' + (result.message || 'Unknown error'));
             }
         } catch (e) {
             console.error('Save API Error:', e);
-            alert('Failed to save to dictionary.');
         }
     }
 </script>

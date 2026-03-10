@@ -2,16 +2,33 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %} | {{ app_name }}</title>
+    <title>{% block title %}{% endblock %}{% if self.title() %} | {% endif %}{{ app_name }}</title>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     
     {% block extra_css %}{% endblock %}
+    <style>
+        /* 確保側邊欄標題連結不會有底線且顏色一致 */
+        .sidebar-header a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .sidebar-header a:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
     <aside class="sidebar">
-        <div class="sidebar-header" data-i18n="app_title"></div>
+        <div class="sidebar-header">
+            <a href="/">
+                <span data-i18n="app_title">{{ app_name }}</span>
+            </a>
+        </div>
         <ul class="nav-list">
             <li class="nav-item {% if request.path == '/syntax' %}active{% endif %}">
                 <a href="/syntax"><span data-i18n="nav_syntax_config"></span></a>
@@ -29,11 +46,6 @@
                 <a href="/dictionary"><span data-i18n="nav_dictionary"></span></a>
             </li>
             
-            <!--
-            <li class="nav-item {% if request.path == '/projects' %}active{% endif %}">
-                <a href="/projects"><span data-i18n="nav_project_management"></span></a>
-            </li> -->
-
             <li class="nav-item {% if request.path == '/morphology' %}active{% endif %}">
                 <a href="/morphology"><span data-i18n="nav_morphology_management"></span></a>
             </li>

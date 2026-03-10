@@ -17,12 +17,12 @@
         </div>
         <div class="count-pill">
             <span id="wordCount">{{ dictionary|length }}</span>
-            <span data-i18n="dict_count">Words</span>
+            <span data-i18n="dict_count"></span>
         </div>
     </div>
     <button onclick="showAddRow()" class="btn-primary">
         <span style="font-size: 1.2rem; margin-right: 4px;">+</span> 
-        <span data-i18n="btn_add_word">Add Word</span>
+        <span data-i18n="btn_add_word"></span>
     </button>
 </div>
 
@@ -31,16 +31,16 @@
         <thead>
             <tr>
                 <th style="width: 20%" class="sortable" onclick="sortDictionary(0)">
-                    <span data-i18n="dict_word">Word</span>
+                    <span data-i18n="dict_word"></span>
                     <span id="sort-icon-0" class="sort-indicator">↕</span>
                 </th>
-                <th style="width: 15%" data-i18n="dict_pos">POS</th>
-                <th style="width: 25%" data-i18n="dict_meaning">Meaning</th>
+                <th style="width: 15%" data-i18n="dict_pos"></th>
+                <th style="width: 25%" data-i18n="dict_meaning"></th>
                 <th style="width: 25%" class="sortable" onclick="sortDictionary(3)">
                     <span data-i18n="dict_ipa">IPA</span>
                     <span id="sort-icon-3" class="sort-indicator">↕</span>
                 </th>
-                <th style="width: 15%; text-align: right;" data-i18n="dict_action">Actions</th>
+                <th style="width: 15%; text-align: right;" data-i18n="dict_action"></th>
             </tr>
         </thead>
         <tbody id="dictBody">

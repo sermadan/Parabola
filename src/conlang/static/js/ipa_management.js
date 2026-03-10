@@ -50,11 +50,21 @@ function updateWeight(type, char, val) {
 }
 
 // ==========================================
-// 類別管理 (Category)
+// 類別管理 (Category) - 已整合固定高度捲動與 Comment 功能
 // ==========================================
 function initCategories() {
     const raw = document.getElementById('hiddenCategoriesJson')?.value || '{}';
-    try { customCategories = JSON.parse(raw); } catch(e) { customCategories = {}; }
+    try { 
+        customCategories = JSON.parse(raw); 
+        // 確保資料結構相容 (將舊有的陣列格式轉為物件格式)
+        Object.keys(customCategories).forEach(code => {
+            if (Array.isArray(customCategories[code])) {
+                customCategories[code] = { symbols: customCategories[code], comment: "" };
+            }
+        });
+    } catch(e) { 
+        customCategories = {}; 
+    }
     renderCategoryList();
     renderCategoryPicker();
 }
@@ -62,38 +72,46 @@ function initCategories() {
 function renderCategoryList() {
     const container = document.getElementById('category-list');
     if (!container) return;
+    
+    // 設定固定高度與捲動
+    container.style.maxHeight = "300px"; 
+    container.style.overflowY = "auto";
+    container.style.border = "1px solid var(--border-color)";
+    container.style.padding = "10px";
+    container.style.borderRadius = "8px";
+    container.style.background = "var(--bg-surface)";
+    
     container.innerHTML = '';
     
     Object.keys(customCategories).forEach(code => {
-        const symbols = customCategories[code];
+        const data = customCategories[code];
         const isEditing = (currentEditingCat === code);
         const div = document.createElement('div');
         
-        // 使用 list-item-edit 結構與 editing 狀態
         div.className = `list-item-edit ${isEditing ? 'editing' : ''}`;
         div.onclick = () => selectCategoryForEdit(code);
 
         div.innerHTML = `
             <div class="item-main" onclick="event.stopPropagation()">
-                <div class="input-group-inline">
-                    <span class="label-caps" data-i18n="label_cat_code">CODE</span>
-                    <input type="text" class="cat-code-input" value="${code}" 
-                           onchange="updateCategoryCode('${code}', this.value)">
+                <div class="input-group-inline" style="display:flex; align-items:center; gap:8px;">
+                    <span class="label-caps" data-i18n="label_cat_code"></span>
+                    <input type="text" class="cat-code-input" 
+                           value="${code}" onchange="updateCategoryCode('${code}', this.value)">
+                    
+                    <span class="label-caps" data-i18n="label_comment"></span>
+                    <input type="text" class="cat-comment-input" 
+                           value="${data.comment || ''}" placeholder="..."
+                           onchange="updateCategoryComment('${code}', this.value)">
                 </div>
                 
-                <div class="symbol-display-area">
-                    <div style="margin-bottom: 8px;">
-                        <span class="label-caps" data-i18n="${isEditing ? 'status_editing' : 'status_click_edit'}">
-
-</span>
-                    </div>
+                <div class="symbol-display-area" style="margin-top:10px;">
                     <div class="cat-symbols-box" id="box-${code}">
-                        ${symbols.length > 0 ? symbols.map(s => `
+                        ${data.symbols.length > 0 ? data.symbols.map(s => `
                             <span class="tag-chip">
                                 ${s}
                                 <span class="remove" onclick="event.stopPropagation(); removeSymbolFromCat('${code}', '${s}')">×</span>
                             </span>
-                        `).join('') : '<span style="color:var(--text-sub); font-size:0.8rem; padding:8px;">(Empty)</span>'}
+                        `).join('') : '<span style="color:var(--text-sub); font-size:0.8rem;">(Empty)</span>'}
                     </div>
                 </div>
             </div>
@@ -116,7 +134,8 @@ function selectCategoryForEdit(code) {
 
 function addNewCategory() {
     const newCode = "NEW_" + Math.floor(Math.random()*100);
-    customCategories[newCode] = [];
+    // 使用新物件結構
+    customCategories[newCode] = { symbols: [], comment: "" };
     currentEditingCat = newCode;
     renderCategoryList();
 }
@@ -131,7 +150,6 @@ function updateCategoryCode(oldCode, newCode) {
     newCode = newCode.toUpperCase().trim().replace(/\s+/g, '_');
     if (!newCode || newCode === oldCode) return renderCategoryList();
     
-    // 如果新代碼已存在，提示或放棄
     if (customCategories[newCode]) {
         alert("Category code already exists!");
         return renderCategoryList();
@@ -146,19 +164,26 @@ function updateCategoryCode(oldCode, newCode) {
     renderCategoryList();
 }
 
+function updateCategoryComment(code, val) {
+    if (customCategories[code]) {
+        customCategories[code].comment = val;
+        syncCategoriesToHidden();
+    }
+}
+
 function removeSymbolFromCat(code, symbol) {
-    customCategories[code] = customCategories[code].filter(s => s !== symbol);
+    customCategories[code].symbols = customCategories[code].symbols.filter(s => s !== symbol);
     syncCategoriesToHidden();
     renderCategoryList();
 }
 
 function toggleSymbolInCurrentCat(char) {
     if (!currentEditingCat) return;
-    const symbols = customCategories[currentEditingCat];
-    if (symbols.includes(char)) {
-        customCategories[currentEditingCat] = symbols.filter(s => s !== char);
+    const data = customCategories[currentEditingCat];
+    if (data.symbols.includes(char)) {
+        data.symbols = data.symbols.filter(s => s !== char);
     } else {
-        customCategories[currentEditingCat].push(char);
+        data.symbols.push(char);
     }
     renderCategoryList();
 }

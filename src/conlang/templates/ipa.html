@@ -161,6 +161,89 @@
         if (window.applyTranslations) applyTranslations();
     }
 
+    /**
+ * 掃描所有勾選的 IPA，並根據 ipa.yaml 的定義進行分類歸納
+ * 這樣 Generator 就能直接使用這些分類標籤
+ */
+function analyzeCategories() {
+    // 定義代碼與其對應的註解名稱
+    const meta = {
+        'P': 'Plosives',
+        'N': 'Nasals',
+        'F': 'Fricatives',
+        'L': 'Liquids/Approximants',
+        'K': 'Coronals',
+        'B': 'Labials',
+        'G': 'Gutturals/Back',
+        'S': 'Sibilants',
+        'O': 'Others'
+    };
+
+    const categories = {};
+    // 初始化結構：{ symbols: [], comment: "..." }
+    Object.keys(meta).forEach(key => {
+        categories[key] = { symbols: [], comment: meta[key] };
+    });
+
+    // 取得所有被勾選的 IPA 元素
+    const checkedConsonants = Array.from(document.querySelectorAll('input[name="ipa_consonant"]:checked')).map(el => el.value);
+
+    // 遍歷所有音素進行特徵分析
+    checkedConsonants.forEach(symbol => {
+        const base = symbol[0]; 
+        
+        for (const [manner, rows] of Object.entries(ipa.base_consonants)) {
+            const colIdx = rows.findIndex(pair => pair && pair.includes(base));
+            if (colIdx !== -1) {
+                const place = ipa.places[colIdx];
+                
+                // 1. 按 Manner (方法) 分類
+                if (manner.includes('plosive')) categories['P'].symbols.push(symbol);
+                if (manner.includes('nasal')) categories['N'].symbols.push(symbol);
+                if (manner.includes('fricative')) categories['F'].symbols.push(symbol);
+                if (manner.includes('approximant') || manner.includes('trill')) categories['L'].symbols.push(symbol);
+                
+                // 2. 按 Place (部位) 分類
+                if (['ipa_place_bilabial', 'ipa_place_labiodental'].includes(place)) categories['B'].symbols.push(symbol);
+                if (['ipa_place_alveolar', 'ipa_place_dental', 'ipa_place_postalveolar'].includes(place)) categories['K'].symbols.push(symbol);
+                if (['ipa_place_velar', 'ipa_place_uvular', 'ipa_place_glottal'].includes(place)) categories['G'].symbols.push(symbol);
+            }
+        }
+    });
+
+    // 移除空分類，並將結果回傳
+    Object.keys(categories).forEach(key => {
+        if (categories[key].symbols.length === 0) {
+            delete categories[key];
+        }
+    });
+
+    return categories;
+}
+        // 修改原本的 form 提交監聽
+    document.getElementById('main-form').onsubmit = async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const payload = {
+            inventory_consonants: formData.getAll('ipa_consonant'),
+            inventory_vowels: formData.getAll('ipa_vowel'),
+            categories: analyzeCategories() // 在這裡同步生成分類
+        };
+
+        const response = await fetch('/api/save_phonology', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("Configuration saved! Categories auto-updated.");
+            window.location.reload();
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         initAllZones();
 

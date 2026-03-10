@@ -56,8 +56,3 @@
 
 "sec_adj_syntax":
   bools: ["feat_agreement"]
-
-"sec_phonology_struct":
-  "opt_syllable_struct":
-    type: single 
-    options: ["syllable_simple", "syllable_moderate", "syllable_complex"]

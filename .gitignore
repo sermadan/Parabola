@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+venv/
+.env
+flask_session/
+instance/
+.pytest_cache/
