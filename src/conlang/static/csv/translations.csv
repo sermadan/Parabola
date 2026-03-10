@@ -16,6 +16,11 @@
 "ui","btn_add_custom","Add Custom Class","新增自訂選項"
 "ui","btn_add_category","Add Category","新增類別"
 "ui","btn_add_word","Add Word","新增單字"
+"ui","btn_V","✅","✅"
+"ui","btn_X","❌","❌"
+"ui","btn_trash","🗑️","🗑️"
+
+
 
 "ui","label_consonants","Consonants","子音"
 "ui","label_vowels","Vowels","母音"
@@ -28,6 +33,25 @@
 "ui","label_settings","Settings","設定"
 "ui","label_frequency","Frequency","出現頻率"
 "ui","label_setup_chart","Setup Chart","設定表格"
+"ui","label_cat_code","Category Code","類別代碼"
+
+"ui","label_syllable_pattern","Syllable Pattern","音節模式"
+"ui","label_words_count","Words Count","生成數量"
+"ui","label_syl_range","Syllables (Min - Max)","音節數範圍"
+"ui","label_swadesh_list","Translation List","翻譯清單"
+"ui","label_lexicon_sandbox","Lexicon Sandbox","詞彙沙盒"
+"ui","btn_run_generator","Run Generator","開始生成"
+"ui","hint_swadesh","If provided, word count will match this list.","若提供清單，生成數量將與清單一致。"
+"ui","hint_gen_empty","Configure patterns and generate some words.","配置模式並生成一些單字。"
+"ui","hint_click_save","Click to Save to Dictionary","點擊儲存至字典"
+"ui","status_total_items","Total items: ","總計項目："
+"ui","status_added_lexicon","✓ Added to Lexicon","✓ 已加入詞庫"
+
+"alert","alert_gen_failed","Generation failed: ","生成失敗："
+"alert","alert_api_conn_error","Could not connect to the generation API.","無法連線至生成 API。"
+
+"status","status_click_edit","Click to Edit","點選右下角以開始編輯"
+"status","status_editing","🟢 Editing","🟢 編輯中"
 
 "sections","sec_morphology_type","Morphological System","類型系統"
 "sections","sec_universal_features","Universal Features","通用特性"
@@ -237,3 +261,11 @@
 "ipa","ipa_nasalization","Nasalization","鼻化"
 "ipa","ipa_creaky_voice","Creaky Voice","嘎裂"
 "ipa","ipa_length","Length","長音"
+
+"ui","label_setup_chart","Setup Paradigm Chart","設定形態表格"
+"ui","morph_empty_msg","Please select dimensions from the pills above to generate the morphological paradigm.","請從上方選項中選擇維度，以生成形態變化表。"
+"ui","morph_drag_hint","Toggle features to define rows and columns","切換下方特徵以定義表格的行列"
+"sections","sec_morphology","Morphology","構詞"
+"sections","sec_noun_syntax","Noun Syntax","名詞語法"
+"sections","sec_verb_syntax","Verb Syntax","動詞語法"
+"sections","sec_adj_syntax","Adjective Syntax","形容詞語法"

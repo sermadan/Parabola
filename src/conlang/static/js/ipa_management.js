@@ -1,5 +1,5 @@
 // ==========================================
-// 全域變數 (保留不變)
+// 全域變數
 // ==========================================
 let weights = { consonant: {}, vowel: {} };
 let inventory = { consonant: [], vowel: [] };
@@ -9,7 +9,7 @@ let currentEditingCat = null;
 const SORT_ORDER = ['base', 'aspiration', 'length', 'nasalized', 'palatalization', 'labialization', 'creaky'];
 
 // ==========================================
-// 核心數據初始化 (保留不變)
+// 核心數據初始化
 // ==========================================
 function initData(ipa, config) {
     inventory = {
@@ -30,20 +30,19 @@ function initData(ipa, config) {
 }
 
 // ==========================================
-// 權重管理邏輯 (同步 Class 名稱)
+// 權重管理邏輯
 // ==========================================
 function updateWeight(type, char, val) {
     const numericVal = parseInt(val);
     if (weights[type]) weights[type][char] = numericVal;
     const safeClass = btoa(encodeURIComponent(char)).replace(/=/g, '');
     
-    // 更新數值標籤 (通用名稱: numeric-label)
+    // 更新數值標籤 (numeric-label)
     document.querySelectorAll(`.val-label-${safeClass}`).forEach(el => el.innerText = numericVal);
     document.querySelectorAll(`input[data-char="${char}"]`).forEach(el => el.value = numericVal);
     
-    // 更新卡片外觀 (通用名稱: interactive-pill)
+    // 更新卡片外觀 (interactive-pill)
     document.querySelectorAll(`.interactive-pill[data-ipa="${char}"]`).forEach(card => {
-        // 更新 value 屬性以觸發 CSS :has(input:not([value="0"]))
         const input = card.querySelector('input[type="range"]');
         if (input) input.setAttribute('value', numericVal);
         card.style.opacity = (numericVal === 0) ? "0.5" : "1";
@@ -51,15 +50,11 @@ function updateWeight(type, char, val) {
 }
 
 // ==========================================
-// 類別管理 (Category) 邏輯 (同步 Class 名稱)
+// 類別管理 (Category)
 // ==========================================
 function initCategories() {
-    const raw = document.getElementById('hiddenCategoriesJson').value;
-    try {
-        customCategories = JSON.parse(raw);
-    } catch(e) {
-        customCategories = {};
-    }
+    const raw = document.getElementById('hiddenCategoriesJson')?.value || '{}';
+    try { customCategories = JSON.parse(raw); } catch(e) { customCategories = {}; }
     renderCategoryList();
     renderCategoryPicker();
 }
@@ -74,34 +69,46 @@ function renderCategoryList() {
         const isEditing = (currentEditingCat === code);
         const div = document.createElement('div');
         
-        // 使用通用名稱: list-item-edit
+        // 使用 list-item-edit 結構與 editing 狀態
         div.className = `list-item-edit ${isEditing ? 'editing' : ''}`;
-        div.style.cursor = 'pointer';
         div.onclick = () => selectCategoryForEdit(code);
 
         div.innerHTML = `
-            <div onclick="event.stopPropagation()">
-                <span class="label-caps">代碼</span>
-                <input type="text" class="cat-code-input" value="${code}" 
-                       onchange="updateCategoryCode('${code}', this.value)">
-            </div>
-            <div style="flex-grow:1; margin-left: 15px;">
-                <span class="label-caps">${isEditing ? '🟢 正在編輯 - 點擊下方字母加入/移除' : '點擊此處開始編輯'}</span>
-                <div class="cat-symbols-box" id="box-${code}">
-                    ${symbols.map(s => `
-                        <span class="tag-chip">${s}<span class="remove" onclick="event.stopPropagation(); removeSymbolFromCat('${code}', '${s}')">×</span></span>
-                    `).join('')}
+            <div class="item-main" onclick="event.stopPropagation()">
+                <div class="input-group-inline">
+                    <span class="label-caps" data-i18n="label_cat_code">CODE</span>
+                    <input type="text" class="cat-code-input" value="${code}" 
+                           onchange="updateCategoryCode('${code}', this.value)">
+                </div>
+                
+                <div class="symbol-display-area">
+                    <div style="margin-bottom: 8px;">
+                        <span class="label-caps" data-i18n="${isEditing ? 'status_editing' : 'status_click_edit'}">
+
+</span>
+                    </div>
+                    <div class="cat-symbols-box" id="box-${code}">
+                        ${symbols.length > 0 ? symbols.map(s => `
+                            <span class="tag-chip">
+                                ${s}
+                                <span class="remove" onclick="event.stopPropagation(); removeSymbolFromCat('${code}', '${s}')">×</span>
+                            </span>
+                        `).join('') : '<span style="color:var(--text-sub); font-size:0.8rem; padding:8px;">(Empty)</span>'}
+                    </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-outline" style="color:red; border-color:#ffcccc;" 
-                    onclick="event.stopPropagation(); deleteCategory('${code}')">🗑️</button>
+            <div class="item-actions">
+                <button type="button" class="btn-icon delete" title="Delete" 
+                        onclick="event.stopPropagation(); deleteCategory('${code}')">
+                    🗑️
+                </button>
+            </div>
         `;
         container.appendChild(div);
     });
     syncCategoriesToHidden();
 }
 
-// --- 類別功能邏輯保留 (selectCategoryForEdit, addNewCategory, deleteCategory, updateCategoryCode, removeSymbolFromCat, toggleSymbolInCurrentCat, syncCategoriesToHidden) ---
 function selectCategoryForEdit(code) {
     currentEditingCat = (currentEditingCat === code) ? null : code;
     renderCategoryList();
@@ -121,11 +128,20 @@ function deleteCategory(code) {
 }
 
 function updateCategoryCode(oldCode, newCode) {
-    newCode = newCode.toUpperCase().trim();
-    if (!newCode || customCategories[newCode]) return renderCategoryList();
+    newCode = newCode.toUpperCase().trim().replace(/\s+/g, '_');
+    if (!newCode || newCode === oldCode) return renderCategoryList();
+    
+    // 如果新代碼已存在，提示或放棄
+    if (customCategories[newCode]) {
+        alert("Category code already exists!");
+        return renderCategoryList();
+    }
+
     customCategories[newCode] = customCategories[oldCode];
     delete customCategories[oldCode];
+    
     if (currentEditingCat === oldCode) currentEditingCat = newCode;
+    
     syncCategoriesToHidden();
     renderCategoryList();
 }
@@ -137,10 +153,7 @@ function removeSymbolFromCat(code, symbol) {
 }
 
 function toggleSymbolInCurrentCat(char) {
-    if (!currentEditingCat) {
-        alert("請先點擊上方的一個類別以進行編輯！");
-        return;
-    }
+    if (!currentEditingCat) return;
     const symbols = customCategories[currentEditingCat];
     if (symbols.includes(char)) {
         customCategories[currentEditingCat] = symbols.filter(s => s !== char);
@@ -156,24 +169,21 @@ function syncCategoriesToHidden() {
 }
 
 // ==========================================
-// 介面渲染與生成器 (同步 Class 名稱)
+// 介面渲染生成器
 // ==========================================
 function createCardHTML(char, type, isPicker = false) {
     const val = weights[type][char] || 10;
     const safeClass = btoa(encodeURIComponent(char)).replace(/=/g, '');
-    
     const clickAction = isPicker ? `onclick="toggleSymbolInCurrentCat('${char}')"` : '';
     const style = (val === 0 && !isPicker) ? 'style="opacity:0.5"' : '';
 
-    // 使用通用名稱: interactive-pill, ipa-symbol-text, numeric-label
-    // 如果是 picker，額外加上 pill-compact
     return `
         <div class="interactive-pill ${isPicker ? 'pill-compact' : ''}" data-ipa="${char}" data-type="${type}" ${style} ${clickAction}>
             <div class="ipa-symbol-text">${char}</div>
             ${!isPicker ? `
             <div class="slider-box">
                 <div class="label-caps">
-                    <span data-i18n="label_frequency">Weight</span> 
+                    <span data-i18n="label_frequency"></span> 
                     <span class="numeric-label val-label-${safeClass}">${val}</span>
                 </div>
                 <input type="range" name="weight_${char}" data-char="${char}" data-type="${type}"
@@ -186,7 +196,6 @@ function createCardHTML(char, type, isPicker = false) {
 function renderCategoryPicker() {
     const area = document.getElementById('category-picker-area');
     if (!area) return;
-    // 使用通用名稱: grid-auto-layout
     let html = '<div class="grid-auto-layout">';
     ['consonant', 'vowel'].forEach(type => {
         inventory[type].forEach(char => {
@@ -198,7 +207,7 @@ function renderCategoryPicker() {
 }
 
 // ==========================================
-// 排序與頁籤邏輯 (同步 Class 名稱)
+// 排序與頁籤邏輯
 // ==========================================
 function applyGlobalSort() {
     const orderStr = document.getElementById('hiddenCustomOrder').value;
@@ -206,15 +215,12 @@ function applyGlobalSort() {
     const orderMap = {};
     alphabetArray.forEach((char, index) => { orderMap[char] = index; });
 
-    document.querySelectorAll('.tab-btn').forEach(grid => {
-        // 同步為搜尋 .interactive-pill
+    document.querySelectorAll('.weight-zone .grid-auto-layout, #overall-display-area .grid-auto-layout').forEach(grid => {
         const cards = Array.from(grid.querySelectorAll('.interactive-pill'));
         cards.sort((a, b) => {
-            const charA = a.dataset.ipa;
-            const charB = b.dataset.ipa;
-            const posA = (orderMap[charA] !== undefined) ? orderMap[charA] : 999;
-            const posB = (orderMap[charB] !== undefined) ? orderMap[charB] : 999;
-            return posA - posB || charA.localeCompare(charB);
+            const posA = orderMap[a.dataset.ipa] ?? 999;
+            const posB = orderMap[b.dataset.ipa] ?? 999;
+            return posA - posB || a.dataset.ipa.localeCompare(b.dataset.ipa);
         });
         cards.forEach(card => grid.appendChild(card));
     });
@@ -230,7 +236,6 @@ function initSortablePool() {
     pool.innerHTML = '';
     currentOrder.forEach(char => {
         const chip = document.createElement('div');
-        // 通用名稱: tag-chip
         chip.className = 'tag-chip';
         chip.draggable = true;
         chip.innerText = char;
@@ -245,8 +250,6 @@ function initSortablePool() {
     pool.addEventListener('dragover', e => {
         e.preventDefault();
         const dragging = document.querySelector('.dragging');
-        if (!dragging) return;
-        // 同步為搜尋 .tag-chip
         const afterElement = Array.from(pool.querySelectorAll('.tag-chip:not(.dragging)')).find(el => {
             const box = el.getBoundingClientRect();
             return e.clientX < box.left + box.width / 2;
@@ -256,7 +259,6 @@ function initSortablePool() {
     });
 }
 
-// --- 剩餘邏輯保留 (switchMainTab, renderSubTabs, initAll) ---
 function switchMainTab(type) {
     document.querySelectorAll(".tab-content, .tab-btn").forEach(el => el.classList.remove("active"));
     const targetTab = document.getElementById(`${type}-tab`);
@@ -273,9 +275,8 @@ function renderSubTabs(type, subKeys) {
     subKeys.sort((a, b) => (SORT_ORDER.indexOf(a) === -1 ? 999 : SORT_ORDER.indexOf(a)) - (SORT_ORDER.indexOf(b) === -1 ? 999 : SORT_ORDER.indexOf(b)));
     subKeys.forEach(key => {
         const btn = document.createElement('button');
-        btn.className = 'tab-btn'; // 使用通用分頁按鈕樣式
+        btn.className = 'tab-btn';
         btn.type = 'button';
-        btn.dataset.key = key;
         const i18nKey = (key === 'base') ? 'ipa_plain' : `ipa_${key}`;
         btn.innerHTML = `<span data-i18n="${i18nKey}"></span>`;
         btn.onclick = () => {
@@ -289,6 +290,9 @@ function renderSubTabs(type, subKeys) {
     if (bar.firstChild) bar.firstChild.click();
 }
 
+// ==========================================
+// 初始化主邏輯 (修正區塊標題)
+// ==========================================
 function initAll(ipaData, configData) {
     initData(ipaData, configData);
     
@@ -299,41 +303,70 @@ function initAll(ipaData, configData) {
         const subKeys = ['base', ...Object.keys(diacritics).filter(k => 
             diacritics[k].applies_to === type + 's' && inventory[type].some(v => v.includes(diacritics[k].symbol))
         )];
+
         subKeys.forEach(key => {
-            const zone = document.createElement('div');
-            zone.id = `zone-${type}-${key}`;
-            zone.className = 'weight-zone';
-            const symbol = (key === 'base') ? '' : diacritics[key].symbol;
             const items = inventory[type].filter(char => {
                 if (key === 'base') return !Object.values(diacritics).some(d => d.symbol && char.includes(d.symbol) && char !== d.symbol);
-                return symbol && char.includes(symbol);
+                return diacritics[key].symbol && char.includes(diacritics[key].symbol);
             });
+
             if (items.length > 0) {
-                // 使用通用名稱: grid-auto-layout
-                let gridHtml = `<div class="grid-auto-layout">`;
-                items.forEach(c => gridHtml += createCardHTML(c, type));
-                gridHtml += `</div>`;
-                zone.innerHTML = gridHtml;
+                const zone = document.createElement('div');
+                zone.id = `zone-${type}-${key}`;
+                zone.className = 'weight-zone';
+
+                // --- 標題格式化 ---
+                const header = document.createElement('div');
+                header.className = 'section-header';
+                const i18nKey = (key === 'base') ? 'ipa_plain' : `ipa_${key}`;
+                header.innerHTML = `<h2 data-i18n="${i18nKey}">${key}</h2>`;
+                zone.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid-auto-layout';
+                items.forEach(c => grid.innerHTML += createCardHTML(c, type));
+                zone.appendChild(grid);
+
                 area.appendChild(zone);
             }
         });
         renderSubTabs(type, subKeys);
     });
 
+    // Overall 區域 (修正樣式結構與標籤生成)
     const overallArea = document.getElementById('overall-display-area');
     if (overallArea) {
-        let html = '';
+        overallArea.innerHTML = ''; 
+        const overallSubKeys = [];
+
         ['consonant', 'vowel'].forEach(type => {
             if (inventory[type].length > 0) {
-                html += `<div class="group-header" data-i18n="ipa_${type}s">${type}s</div><div class="grid-auto-layout">`;
-                inventory[type].forEach(c => html += createCardHTML(c, type));
-                html += `</div>`;
+                overallSubKeys.push(type + 's'); // 用於 renderSubTabs
+
+                const zone = document.createElement('div');
+                zone.id = `zone-overall-${type}s`; // 與 renderSubTabs ID 對應
+                zone.className = 'weight-zone'; // 確保 Percentile Bar 樣式正確
+
+                const header = document.createElement('div');
+                header.className = 'section-header';
+                header.innerHTML = `<h2 data-i18n="ipa_${type}s">${type}s</h2>`;
+                zone.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid-auto-layout';
+                inventory[type].forEach(c => grid.innerHTML += createCardHTML(c, type));
+                zone.appendChild(grid);
+
+                overallArea.appendChild(zone);
             }
         });
-        overallArea.innerHTML = html;
+        
+        // 生成 Overall 的子標籤 Bar (Consonants / Vowels)
+        renderSubTabs('overall', overallSubKeys);
     }
 
+    initCategories();
     initSortablePool();
     applyGlobalSort();
-    if (window.applyTranslations) applyTranslations();
+    if (window.applyTranslations) window.applyTranslations();
 }

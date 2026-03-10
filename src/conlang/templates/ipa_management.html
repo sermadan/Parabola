@@ -27,12 +27,6 @@
             <button type="button" class="tab-btn" data-type="category" onclick="switchMainTab('category')">
                 <span data-i18n="label_ipa_categories"></span>
             </button>
-            <button type="button" class="tab-btn" data-type="consonant" onclick="switchMainTab('consonant')">
-                <span data-i18n="ipa_consonants"></span>
-            </button>
-            <button type="button" class="tab-btn" data-type="vowel" onclick="switchMainTab('vowel')">
-                <span data-i18n="ipa_vowels"></span>
-            </button>
         </div>
 
         <div id="category-tab" class="tab-content">
@@ -52,21 +46,22 @@
                     value='{{ config.phonology.categories | tojson | safe if config.phonology.categories else "{}" }}'>
             </div>
 
-            <div class="group-header">快速選取清單</div>
+            <div class="group-header"></div>
             <div id="category-picker-area"></div>
         </div>
 
         <div id="overall-tab" class="tab-content">
-            <div class="config-panel">
-                <span class="label-caps" data-i18n="label_sort"></span>
-                <div id="sort-pool" class="sort-pool"></div>
+            <div class="sub-tabs-bar">
+                <div class="label-caps" style="margin-left: 10px; margin-bottom: 5px;" data-i18n="label_sort"></div>
+                <div id="sort-pool" class="tabs sort-pool"></div>
+                
+                <div id="overall-sub-bar" class="tabs" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;"></div>
             </div>
             <div id="overall-display-area"></div>
         </div>
 
         <div id="consonant-tab" class="tab-content">
             <div class="sub-tabs-bar">
-                <span class="label-caps" data-i18n="label_consonants"></span>
                 <div id="consonant-sub-bar" class="tabs"></div>
             </div>
             <div id="consonant-display-area"></div>
@@ -74,7 +69,6 @@
 
         <div id="vowel-tab" class="tab-content">
             <div class="sub-tabs-bar">
-                <span class="label-caps" data-i18n="label_vowels"></span>
                 <div id="vowel-sub-bar" class="tabs"></div>
             </div>
             <div id="vowel-display-area"></div>

@@ -1,5 +1,58 @@
 /* ==========================================================================
-   1. 導航與分頁系統 (Tabs & Toggle Bar) 
+   1. 佈局與層級 (Base Layout & Typography) 
+   ========================================================================== */
+.label-caps {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+    display: block;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.dependent-section { 
+    transition: all 0.3s ease; 
+    margin-bottom: 20px; 
+    display: none; 
+    padding-left: 20px; 
+    border-left: 2px solid var(--primary-glass);
+}
+.dependent-section.active { display: block; }
+
+.sort-section-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.sort-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.sort-section-title span {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.drag-hint {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   2. 導航與分頁系統 (Tabs & Toggle Bar) 
    ========================================================================== */
 .tabs {
     display: flex;
@@ -25,35 +78,25 @@
     white-space: nowrap;
 }
 
-.tab-btn:hover, .sub-tab-btn:hover {
-    color: var(--primary);
-    background: var(--primary-glass);
-}
+.tab-btn:hover, .sub-tab-btn:hover { color: var(--primary); background: var(--primary-glass); }
+.tab-btn.active, .sub-tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-.tab-btn.active, .sub-tab-btn.active {
-    color: var(--primary);
-    border-bottom: 2px solid var(--primary);
-}
-
-.sub-tabs-bar { 
-    margin-top: 20px; 
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.sub-tabs-bar .tabs { 
-    border-bottom-width: 1px; 
-    margin-bottom: 15px; 
-}
+.sub-tabs-bar { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+.sub-tabs-bar .tabs { border-bottom-width: 1px; margin-bottom: 15px; overflow-x: auto; }
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
 /* ==========================================================================
-   2. 核心 Pill 系統 (通用標籤風格)
+   3. 核心 Pill 系統 (通用標籤風格)
    ========================================================================== */
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
 
-/* 基礎標籤：適用於功能特性、分類標籤等 */
 .glass-pill, .tag-chip, .editable-pill, .custom-pill-tag, .interactive-pill {
     display: inline-flex;
     align-items: center;
@@ -69,33 +112,31 @@
     position: relative;
     user-select: none;
     font-size: 0.9rem;
-    font-weight: 400 !important;
+    font-weight: 400;
     color: #555; 
 }
 
-.glass-pill:hover, .tag-chip:hover, .editable-pill:hover, .custom-pill-tag:hover, .interactive-pill:hover {
+.glass-pill:hover, .tag-chip:hover, .custom-pill-tag:hover {
     border-color: #bbb;
     background: #f0f1f2;
 }
 
-/* 選中狀態 */
 .glass-pill:has(input:checked), 
 .tag-chip:focus-within, 
 .editable-pill:focus-within,
 .custom-pill-tag:focus-within,
 .interactive-pill:has(input:not([value="0"])) {
-    border-color: var(--primary-border) !important;
-    background: var(--primary-glass) !important;
-    color: var(--primary) !important;
-    font-weight: 600 !important;
+    border-color: var(--primary);
+    background: var(--primary-glass);
+    color: var(--primary);
+    font-weight: 600;
     box-shadow: 0 4px 12px var(--primary-glass);
 }
 
-/* 隱形輸入框修正 */
 .editable-pill input, .custom-pill-tag input, .glass-pill input[type="text"] {
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
+    background: transparent;
+    border: none;
+    outline: none;
     font-size: 0.9rem;
     font-family: inherit;
     color: inherit;
@@ -107,14 +148,12 @@
 }
 
 /* ==========================================================================
-   3. IPA 專用按鈕 (獨立樣式：緊湊不寬)
+   4. IPA 專用按鈕 (獨立樣式：緊湊不寬)
    ========================================================================== */
-
 .table-ipa-item {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* 縮小間距防止太寬 */
     padding: 0 8px; 
     min-width: 34px;
     height: 34px;
@@ -132,12 +171,11 @@
 }
 
 .table-ipa-item:has(input:checked) {
-    border-color: var(--primary) !important;
-    background: var(--primary-glass) !important;
-    color: var(--primary) !important;
+    border-color: var(--primary);
+    background: var(--primary-glass);
+    color: var(--primary);
 }
 
-/* 內部的符號文字：維持灰黑細體，縮減字距 */
 .ipa-symbol-text {
     font-size: 1.1rem;
     font-weight: 400;
@@ -151,15 +189,14 @@
     font-weight: 600;
 }
 
-/* 隱藏 Checkbox */
 .glass-pill input[type="checkbox"], 
 .glass-pill input[type="radio"],
 .table-ipa-item input[type="checkbox"] {
-    display: none !important;
+    display: none;
 }
 
 /* ==========================================================================
-   4. 配置面板與表格佈局
+   5. 配置面板與表格佈局 (Config & Grid)
    ========================================================================== */
 .config-panel {
     background: var(--bg-card, #fafafa);
@@ -178,7 +215,7 @@
 
 .ipa-table th, .ipa-table td { 
     border: 1px solid #f0f0f0; 
-    padding: 6px 4px; /* 緊湊格間距 */
+    padding: 6px 4px; 
     text-align: center; 
     height: 44px; 
 }
@@ -190,16 +227,18 @@
     text-transform: uppercase;
 }
 
-/* ==========================================================================
-   5. 管理工具與輔助 (Utilities)
-   ========================================================================== */
+.ipa-zone, .weight-zone { display: none; }
+.ipa-zone.active, .weight-zone.active { display: block; }
 
+/* ==========================================================================
+   6. 管理工具與輔助 (Utilities)
+   ========================================================================== */
 .btn-tag-add {
     background: none;
     border: 1px dashed var(--primary);
     color: var(--primary);
     border-radius: 50px;
-    padding: 0 16px;
+    padding: 5px 15px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -208,13 +247,282 @@
     display: inline-flex;
     align-items: center;
 }
+.btn-tag-add:hover { background: var(--primary-glass); }
 
 .btn-tag-remove {
-    background: none; border: none; color: #999;
-    cursor: pointer; font-size: 1.1rem; margin-left: 6px;
-    display: flex; align-items: center; line-height: 1;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-left: 6px;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+.btn-tag-remove:hover { color: #dc3545; }
+
+.sortable-chosen {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transform: scale(1.02);
+    z-index: 10;
 }
 
-.label-caps { font-size: 0.75rem; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 8px; display: block; text-transform: uppercase; }
-.weight-zone, .ipa-zone { display: none; }
-.weight-zone.active, .ipa-zone.active { display: block; }
+/* ==========================================================================
+   7. 類別管理條目 (Category Management List)
+   ========================================================================== */
+.list-item-edit {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.list-item-edit:hover { border-color: var(--text-sub); }
+.list-item-edit.editing {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+    box-shadow: 0 4px 12px var(--primary-glass);
+}
+
+.item-main { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.input-group-inline { display: flex; align-items: center; gap: 10px; }
+
+.cat-code-input {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--primary);
+    width: 120px;
+}
+
+.cat-code-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.cat-symbols-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: rgba(0,0,0,0.02);
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 44px;
+    border: 1px inset rgba(0,0,0,0.03);
+}
+
+/* ==========================================================================
+   8. 權重區域卡片與滑桿 (Weight Management Cards)
+   ========================================================================== */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 25px 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.weight-zone .grid-auto-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.weight-zone .interactive-pill {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+    height: auto;
+    border-radius: 12px;
+}
+
+.weight-zone .ipa-symbol-text {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+.slider-box { width: 100%; }
+.slider-box .label-caps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.numeric-label {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.slider-box input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.item-actions .delete {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.2rem; padding: 8px; border-radius: 50%; transition: 0.2s;
+}
+.item-actions .delete:hover { background: rgba(220, 53, 69, 0.1); }
+
+/* ==========================================================================
+   9. 通用表格系統 (Dictionary & Data Tables)
+   ========================================================================== */
+.data-table-container {
+    width: 100%;
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.data-table th {
+    background: #f8f9fa;
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    transition: background 0.2s;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { background: #f0f2f5; }
+.sort-indicator { 
+    margin-left: 4px; font-size: 0.7rem; color: var(--primary); 
+    opacity: 0.6; font-family: monospace;
+}
+
+/* ==========================================================================
+   10. 搜尋與工具列 (Search & Controls)
+   ========================================================================== */
+.page-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.search-group { display: flex; align-items: center; gap: 12px; flex-grow: 1; }
+.search-box {
+    display: flex; align-items: center; background: #fff;
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 0 12px; height: 40px; transition: all 0.2s;
+    flex-grow: 1; max-width: 400px;
+}
+.search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glass); }
+.search-box input { border: none; background: transparent; padding: 0 8px; font-size: 0.95rem; color: var(--text-main); outline: none; width: 100%; }
+
+.count-pill {
+    display: flex; align-items: center; gap: 6px; padding: 0 14px;
+    height: 40px; background: var(--primary-glass); color: var(--primary);
+    border-radius: 8px; font-weight: 600; font-size: 0.9rem; white-space: nowrap;
+}
+
+/* ==========================================================================
+   11. 字典內嵌編輯器 (In-place Editor)
+   ========================================================================== */
+.inplace-input {
+    width: 100%; height: 34px; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.9rem; background: white; color: var(--text-main);
+    transition: all 0.2s ease; box-sizing: border-box;
+}
+.inplace-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glass); }
+
+.dict-row.editing-active { background-color: var(--primary-glass); }
+.action-group { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+.btn-save-sm { color: #28a745; }
+.btn-cancel-sm { color: #6c757d; }
+.btn-delete-sm { color: #bbb; }
+.btn-delete-sm:hover { color: #dc3545; }
+
+.font-bold { font-weight: 700; }
+.phonetic { font-family: "Segoe UI", "Lucida Sans Unicode", sans-serif; color: var(--primary); }
+.btn-primary { 
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
+    height: 40px; padding: 0 20px; border-radius: 8px; border: none;
+    background: var(--primary); color: white; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.btn-primary:hover { background: #1557b0; transform: translateY(-1px); }
+
+/* ==========================================================================
+   12. 頂欄與全局操作按鈕 (Top Bar Actions)
+   ========================================================================== */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 38px; padding: 0 20px; border-radius: 8px; border: 1px solid transparent;
+    font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s ease;
+    font-size: 0.9rem; line-height: 1; white-space: nowrap;
+}
+
+.btn-save {
+    background: var(--primary); color: white;
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.2); border-color: var(--primary);
+}
+.btn-save:hover { background: #1557b0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
+
+.btn-outline { background: white; border: 1px solid var(--border); color: var(--text-sub); }
+.btn-outline:hover { background: #f1f3f4; border-color: var(--text-sub); color: var(--text-main); }
+
+.lang-switcher { display: inline-flex; background: #eee; padding: 3px; border-radius: 8px; margin-right: 15px; border: 1px solid var(--border); }
+.btn-lang {
+    padding: 6px 14px; border: none; cursor: pointer; border-radius: 6px;
+    font-weight: 600; transition: 0.2s; font-size: 0.75rem; background: transparent; color: var(--text-sub);
+}
+.btn-lang.active, .btn-lang:hover { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+.actions { display: flex; align-items: center; gap: 10px; }
+
+/* 核心：處理 Sort Pool 換行與 Overall 佈局 */
+#overall-tab .sub-tabs-bar {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+    padding: 10px; border-bottom: 1px solid var(--border);
+}
+
+.sort-pool.tabs {
+    display: flex;
+    flex-wrap: wrap; /* 移除 important，依靠選取器優先級 */
+    gap: 8px;
+    overflow-x: visible;
+    padding: 10px 5px;
+    border-bottom: none;
+}
+
+.sort-pool .tag-chip {
+    flex-shrink: 0;
+    margin: 0;
+}

@@ -56,19 +56,19 @@
     <aside class="control-panel">
         <form id="generatorForm">
             <div class="config-group">
-                <label>Syllable Pattern</label>
+                <label data-i18n="label_syllable_pattern"></label>
                 <textarea id="syllable" name="pattern" class="input-field" 
                         style="height: 120px; font-size: 0.85rem;" 
                         placeholder="e.g., CV(C)" value="CVC"></textarea>
             </div>
 
             <div class="config-group">
-                <label>Words Count</label>
+                <label data-i18n="label_words_count"></label>
                 <input type="number" name="count" class="input-field" value="24" min="1" max="200">
             </div>
 
             <div class="config-group">
-                <label>Syllables (Min - Max)</label>
+                <label data-i18n="label_syl_range"></label>
                 <div class="num-grid">
                     <input type="number" name="min_syl" class="input-field" value="1" min="1">
                     <input type="number" name="max_syl" class="input-field" value="2" min="1">
@@ -76,30 +76,30 @@
             </div>
 
             <div class="config-group">
-                <label>Translation List (One per line)</label>
+                <label data-i18n="label_swadesh_list"></label>
                 <textarea id="swadeshList" name="swadesh_list" class="input-field" 
                         style="height: 120px; font-size: 0.85rem;" 
                         placeholder="e.g.&#10;sun&#10;moon&#10;water&#10;star"></textarea>
-                <small style="color:#888; font-size: 0.7rem;">If provided, word count will match this list.</small>
+                <small style="color:#888; font-size: 0.7rem;" data-i18n="hint_swadesh"></small>
             </div>
 
             <button type="submit" class="btn-generate" id="genBtn">
                 <span class="loader" id="genLoader"></span>
-                <span id="btnText">✨ Run Generator</span>
+                <span id="btnText" data-i18n="btn_run_generator"></span>
             </button>
         </form>
     </aside>
 
     <main class="results-panel">
         <div class="results-header">
-            <h3 style="margin:0">Lexicon Sandbox</h3>
+            <h3 style="margin:0" data-i18n="label_lexicon_sandbox"></h3>
             <div id="genStatus" style="font-size: 0.8rem; color: #888;"></div>
         </div>
 
         <div id="resultsGrid" class="word-grid">
             <div style="grid-column: 1/-1; text-align:center; color:#ccc; margin-top:120px;">
                 <i class="fas fa-wand-magic-sparkles" style="font-size:2rem; margin-bottom:10px; display:block;"></i>
-                Configure patterns and generate some words.
+                <span data-i18n="hint_gen_empty"></span>
             </div>
         </div>
     </main>

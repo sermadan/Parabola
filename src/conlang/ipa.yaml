@@ -59,7 +59,7 @@ base_consonants:
   "ipa_manner_nasal": [["","m"], ["","ɱ"], null, ["","n"], null, null, ["","ɳ"], ["","ɲ"], ["","ŋ"], ["","ɴ"], null]
   "ipa_manner_trill": [["","ʙ"], null, null, ["","r"], null, null, null, null, null, ["","ʀ"], null]
   "ipa_manner_tap": [null, ["","ⱱ"], null, ["","ɾ"], null, null, ["","ɽ"], null, null, null, null]
-  "fricative": [["ɸ","β"], ["f","v"], ["θ","ð"], ["s","z"], ["ʃ","ʒ"], ["ɕ","ʑ"], ["ʂ","ʐ"], ["ç","ʝ"], ["x","ɣ"], ["χ","ʁ"], ["h","ɦ"]]
+  "ipa_manner_fricative": [["ɸ","β"], ["f","v"], ["θ","ð"], ["s","z"], ["ʃ","ʒ"], ["ɕ","ʑ"], ["ʂ","ʐ"], ["ç","ʝ"], ["x","ɣ"], ["χ","ʁ"], ["h","ɦ"]]
   "ipa_manner_lat_fricative": [null, null, null, ["ɬ","ɮ"], null, null, null, null, null, null, null]
   "ipa_manner_approximant": [["","w"], ["","ʋ"], null, ["","ɹ"], null, null, ["","ɻ"], ["","j"], ["","ɰ"], null, null]
   "ipa_manner_lat_approximant": [null, null, null, ["","l"], null, null, ["","ɭ"], ["","ʎ"], ["","ʟ"], null, null]
