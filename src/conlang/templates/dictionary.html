@@ -30,16 +30,17 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 20%" class="sortable" onclick="sortDictionary(0)">
+                <th style="width: 15%" class="sortable" onclick="sortDictionary(0)">
                     <span data-i18n="dict_word"></span>
                     <span id="sort-icon-0" class="sort-indicator">↕</span>
                 </th>
-                <th style="width: 15%" data-i18n="dict_pos"></th>
-                <th style="width: 25%" data-i18n="dict_meaning"></th>
-                <th style="width: 25%" class="sortable" onclick="sortDictionary(3)">
-                    <span data-i18n="dict_ipa">IPA</span>
+                <th style="width: 10%" data-i18n="dict_pos"></th>
+                <th style="width: 20%" data-i18n="dict_meaning"></th>
+                <th style="width: 20%" class="sortable" onclick="sortDictionary(3)">
+                    <span data-i18n="dict_ipa"></span>
                     <span id="sort-icon-3" class="sort-indicator">↕</span>
                 </th>
+                <th style="width: 20%" data-i18n="dict_notes"></th>
                 <th style="width: 15%; text-align: right;" data-i18n="dict_action"></th>
             </tr>
         </thead>
@@ -69,7 +70,8 @@
         }
 
         document.querySelectorAll('.sort-indicator').forEach(el => el.innerText = '↕');
-        document.getElementById(`sort-icon-${colIndex}`).innerText = currentSort.asc ? '▲' : '▼';
+        const icon = document.getElementById(`sort-icon-${colIndex}`);
+        if (icon) icon.innerText = currentSort.asc ? '▲' : '▼';
 
         const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -99,19 +101,15 @@
         const viewEls = row.querySelectorAll(`.view-mode-${index}`);
         const editEls = row.querySelectorAll(`.edit-mode-${index}`);
         
-        // 判斷當前是否為檢視模式 (檢查第一個 view 元素是否顯示)
         const isViewing = viewEls[0].style.display !== 'none';
 
         if (isViewing) {
-            // 進入編輯模式
             viewEls.forEach(el => el.style.display = 'none');
             editEls.forEach(el => {
-                // 如果是按鈕組容器，使用 flex；輸入框用 block
                 el.style.display = el.classList.contains('action-group') ? 'flex' : 'block';
             });
             row.classList.add('editing-active');
         } else {
-            // 回到檢視模式
             viewEls.forEach(el => el.style.display = '');
             editEls.forEach(el => el.style.display = 'none');
             row.classList.remove('editing-active');
@@ -121,13 +119,13 @@
     function saveRow(index) {
         const row = document.getElementById(`row-${index}`);
         
-        // 精確抓取該行內的資料
         const data = {
             index: index,
             word: row.querySelector('input[name="word"]').value,
             pos: row.querySelector('select[name="pos"]').value,
             translation: row.querySelector('input[name="translation"]').value,
-            ipa: row.querySelector('input[name="ipa"]').value
+            ipa: row.querySelector('input[name="ipa"]').value,
+            notes: row.querySelector('input[name="notes"]').value
         };
 
         fetch('/api/dictionary/update', {
@@ -138,7 +136,6 @@
         .then(res => res.json())
         .then(json => {
             if (json.success) {
-                // 成功後不刷新頁面，直接更新 UI
                 row.querySelector('.word-main').innerText = data.word;
                 
                 const posTag = row.querySelector('.pos-tag');
@@ -147,10 +144,10 @@
                 row.querySelector('.word-sub').innerText = data.translation;
                 row.querySelector('.phonetic').innerText = `/${data.ipa}/`;
                 
-                // 重新觸發 i18n 翻譯 (確保 POS 標籤更新)
-                if (window.applyTranslations) applyTranslations();
+                const notesView = row.querySelector('.word-notes');
+                if (notesView) notesView.innerText = data.notes;
                 
-                // 退出編輯模式
+                if (window.applyTranslations) applyTranslations();
                 toggleEdit(index);
             } else {
                 alert(json.message || "Save failed");
@@ -182,7 +179,10 @@
 
     function hideAddRow() {
         document.getElementById('addRow').style.display = 'none';
-        ['new-word', 'new-translation', 'new-ipa'].forEach(id => document.getElementById(id).value = '');
+        ['new-word', 'new-translation', 'new-ipa', 'new-notes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
     }
 
     function saveNewWord() {
@@ -190,7 +190,8 @@
             word: document.getElementById('new-word').value,
             pos: document.getElementById('new-pos').value,
             translation: document.getElementById('new-translation').value,
-            ipa: document.getElementById('new-ipa').value
+            ipa: document.getElementById('new-ipa').value,
+            notes: document.getElementById('new-notes').value
         };
         if (!data.word) { alert("Please enter a word"); return; }
 

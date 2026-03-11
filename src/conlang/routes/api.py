@@ -59,8 +59,12 @@ def api_generate_words():
 @api_bp.route('/dictionary/add', methods=['POST'])
 def api_add_entry():
     return _update_lexicon(lambda words, data: words.insert(0, {
-        'word': data['word'], 'pos': data['pos'], 'translation': data['translation'],
-        'ipa': data['ipa'], 'syllables': data['ipa'].split('.') if data.get('ipa') else []
+        'word': data['word'], 
+        'pos': data['pos'], 
+        'translation': data['translation'],
+        'ipa': data['ipa'], 
+        'syllables': data['ipa'].split('.') if data.get('ipa') else [],
+        'notes': data.get('notes', '')
     }))
 
 @api_bp.route('/dictionary/update', methods=['POST'])
@@ -69,8 +73,12 @@ def api_update_entry():
         index = data.get('index')
         if index is not None and 0 <= index < len(words):
             words[index] = {
-                'word': data['word'], 'pos': data['pos'], 'translation': data['translation'],
-                'ipa': data['ipa'], 'syllables': data['ipa'].split('.') if data.get('ipa') else []
+                'word': data['word'], 
+                'pos': data['pos'], 
+                'translation': data['translation'],
+                'ipa': data['ipa'], 
+                'syllables': data['ipa'].split('.') if data.get('ipa') else [],
+                'notes': data.get('notes', '')
             }
         else: raise ValueError("Invalid index")
     return _update_lexicon(update_logic)

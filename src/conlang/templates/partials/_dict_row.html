@@ -40,6 +40,15 @@
         </div>
     </td>
 
+    <td>
+        <div class="view-mode-{{ index }}">
+            <span class="word-notes" style="color: #666; font-size: 0.9rem;">{{ entry.notes or '' }}</span>
+        </div>
+        <div class="edit-mode-{{ index }}" style="display: none;">
+            <input type="text" class="inplace-input" name="notes" value="{{ entry.notes or '' }}">
+        </div>
+    </td>
+
     <td style="text-align: right;">
         <div class="action-group">
             <div class="view-mode-{{ index }}">
