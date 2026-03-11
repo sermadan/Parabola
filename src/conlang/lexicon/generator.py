@@ -53,25 +53,20 @@ class WordGenerator:
                 elif members:
                     syllable += random.choice(members)
             else:
-                # 處理固定綴字，但不包含我們定義的代碼
                 syllable += char
         return syllable
 
-    def generate(self, count=10, pattern="CVC", min_syl=1, max_syl=3, translations=None):
+    def generate(self, count=10, pattern="CV", min_syl=1, max_syl=3, translations=None):
         results = []
-        # 將 "CV CVC" 切成 ['CV', 'CVC']
-        pattern_list = pattern.split() if pattern else ["CVC"]
+        pattern_list = pattern.split() if pattern else ["CV"]
         
         for i in range(count):
             num_syl = random.randint(min_syl, max_syl)
-            
-            # 組合音節
+
             word_ipa = "".join([self._generate_syllable(random.choice(pattern_list)) for _ in range(num_syl)])
             
-            # 取得對應翻譯
             current_trans = ""
             if translations and i < len(translations):
-                # 處理 translations 可能是字典列表或純字串列表的情況
                 item = translations[i]
                 current_trans = item.get('meaning', '') if isinstance(item, dict) else item
             
@@ -82,7 +77,7 @@ class WordGenerator:
             })
         return results
 
-# 介面對接
+
 def func(count, config, pattern, min_syl, max_syl, translations=None):
     gen = WordGenerator(config)
     return gen.generate(count, pattern, min_syl, max_syl, translations)

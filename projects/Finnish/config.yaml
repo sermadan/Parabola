@@ -1,0 +1,56 @@
+sec_morphology_type:
+  opt_morphology:
+  - type_analytic
+sec_verb_syntax:
+  bools:
+    feat_tense: true
+  settings:
+    feat_tense:
+    - tense_past
+    - tense_present
+    - tense_future
+phonology:
+  inventory_consonants:
+  - p
+  - b
+  - t
+  - d
+  inventory_vowels:
+  - i
+  - y
+  inventory:
+  - p
+  - b
+  - t
+  - d
+  - i
+  - y
+  categories:
+    B:
+      comment: Labials
+      symbols:
+      - p
+      - b
+    K:
+      comment: Coronals
+      symbols:
+      - t
+      - d
+    P:
+      comment: Plosives
+      symbols:
+      - p
+      - b
+      - t
+      - d
+  weights:
+    consonants:
+      b: 32
+      d: 10
+      p: 10
+      t: 10
+    vowels:
+      i: 10
+      y: 10
+  custom_order: ''
+morphology: {}

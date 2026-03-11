@@ -1,5 +1,5 @@
 "category","key","en","zh"
-"ui","app_title","Gugugaga","Gugugaga"
+"ui","app_title","Parabola","Parabola"
 
 "ui","nav_syntax_config","Syntax Configuration","語法配置"
 "ui","nav_ipa_system","IPA System","音標系統"
@@ -19,8 +19,6 @@
 "ui","btn_V","✅","✅"
 "ui","btn_X","❌","❌"
 "ui","btn_trash","🗑️","🗑️"
-
-
 
 "ui","label_consonants","Consonants","子音"
 "ui","label_vowels","Vowels","母音"
@@ -64,6 +62,18 @@
 "ui","status_total_items","Total items: ","總計項目："
 "ui","status_added_lexicon","✓ Added to Lexicon","✓ 已加入詞庫"
 
+"ui","label_syllable_pattern","Syllable Patterns","音節模式"
+"ui","label_syl_pattern_hint","Space separated patterns","以空格分隔多組模式"
+"ui","label_words_count","Word Count","生成數量"
+"ui","label_syl_range","Syllable Range","音節長度範圍"
+"ui","label_syl_min","Min","最小值"
+"ui","label_syl_max","Max","最大值"
+"ui","label_swadesh_list","Word List","單字清單"
+"ui","label_swadesh_hint","One meaning per line","每行輸入一個意義"
+"ui","label_lexicon_sandbox","Lexicon Sandbox","詞彙實驗室"
+"ui","status_generating","Generating...","生成中..."
+"ui","msg_no_results","No results. Check your config.","無結果，請檢查配置。"
+
 "alert","alert_gen_failed","Generation failed: ","生成失敗："
 "alert","alert_api_conn_error","Could not connect to the generation API.","無法連線至生成 API。"
 
@@ -94,6 +104,7 @@
 "features","feat_conjugation","Conjugation System","變位"
 "features","feat_agreement","Adjective Agreement","形容詞一致性"
 
+"groups","grp_core_cases","Core Cases","配列格位"
 "groups","grp_spatiotemporal","Space, Time & Direction","空間、時間與方向"
 "groups","grp_possessive_instr","Possession & Instrument","領屬、伴隨與工具"
 "groups","grp_state_manner","State & Manner","狀態與方式"

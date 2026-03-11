@@ -117,8 +117,6 @@
             const configData = {{ config|tojson|safe if config else 'null' }};
 
             const hasIPA = ipaData && Object.keys(ipaData).length > 0;
-            
-            // 修正：檢查 inventory_consonants 和 inventory_vowels，這才是你儲存的 Key
             const phon = configData?.phonology;
             const hasPhonology = phon && (
                 (phon.inventory_consonants && phon.inventory_consonants.length > 0) || 
@@ -128,7 +126,7 @@
             if (!hasIPA || !hasPhonology) {
                 console.log("Debug - Config:", configData); // 偵錯用
                 alert("⚠️ 目前還沒有設定音標資料！\n請先到「音標系統」頁面選取你的 IPA 符號並儲存。");
-                window.location.href = "{{ url_for('ipa_tool') }}"; 
+                window.location.href = "{{ url_for('views.ipa_tool') }}"; 
                 return;
             }
             

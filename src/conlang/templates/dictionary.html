@@ -130,7 +130,7 @@
             ipa: row.querySelector('input[name="ipa"]').value
         };
 
-        fetch('/dictionary/api/update', {
+        fetch('/api/dictionary/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -164,7 +164,7 @@
     
     function deleteRow(index) {
         if (!confirm("Are you sure?")) return;
-        fetch('/dictionary/api/delete', {
+        fetch('/api/dictionary/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ index: index })
@@ -194,7 +194,7 @@
         };
         if (!data.word) { alert("Please enter a word"); return; }
 
-        fetch('/dictionary/api/add', {
+        fetch('/api/dictionary/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)

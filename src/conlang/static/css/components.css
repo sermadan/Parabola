@@ -507,7 +507,6 @@
 
 .actions { display: flex; align-items: center; gap: 10px; }
 
-/* 核心：處理 Sort Pool 換行與 Overall 佈局 */
 #overall-tab .sub-tabs-bar {
     display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
     padding: 10px; border-bottom: 1px solid var(--border);
@@ -515,7 +514,7 @@
 
 .sort-pool.tabs {
     display: flex;
-    flex-wrap: wrap; /* 移除 important，依靠選取器優先級 */
+    flex-wrap: wrap;
     gap: 8px;
     overflow-x: visible;
     padding: 10px 5px;

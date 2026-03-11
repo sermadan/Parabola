@@ -13,7 +13,7 @@
             <p class="label-caps" data-i18n="label_project_name_hint"></p>
         </div>
         
-        <form action="{{ url_for('portal') }}" method="POST" style="margin-top: 15px;">
+        <form action="{{ url_for('views.portal') }}" method="POST" style="margin-top: 15px;">
             <input type="text" name="project_name" required 
                    class="inplace-input" 
                    style="margin-bottom: 12px; width: 100%;"
@@ -40,7 +40,7 @@
         </div>
 
         <div class="action-group" style="margin-top: 25px;">
-            <a href="{{ url_for('select_project', name=p) }}" 
+            <a href="{{ url_for('views.select_project', name=p) }}" 
                class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" 
                style="width: 100%;">
                 <span data-i18n="btn_switch_to"></span>
