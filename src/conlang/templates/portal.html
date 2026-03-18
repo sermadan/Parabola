@@ -54,12 +54,18 @@
 
 {% block content %}
 <div class="announcement-bar">
+    === DEBUG MONITOR ===<br>
+    USER_ID: {{ user_id }}<br>
+    CURRENT: {{ current_project }}<br>
+    ===================
+</div>
+
+<div class="announcement-bar">
     <div class="announcement-icon">⚠️</div>
     <div class="announcement-content">
-        <strong data-i18n="top_bar_title">Cloud Persistence Warning:</strong> 
-        <span data-i18n="top_bar_msg">
-            Render data resets on reboot. Please <b>download all your YAMLs</b> via the 💾 button before leaving to prevent data loss.
-        </span>
+        <strong data-i18n="top_bar_title"></strong> 
+        <span data-i18n="top_bar_msg"></span>
+
     </div>
 </div>
 

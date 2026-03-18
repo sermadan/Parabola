@@ -24,6 +24,7 @@ def create_app():
     def inject_globals():
         return {
             'app_name': 'Parabola',
+            'user_id': session.get('user_id', 'Guest'),
             'current_project': session.get('current_project', 'None')
         }
     

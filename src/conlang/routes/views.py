@@ -1,6 +1,5 @@
 import os
 import json
-import io
 from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory, abort
 from werkzeug.utils import secure_filename
 import conlang.paths as paths
@@ -8,52 +7,52 @@ from conlang.utils import utils
 
 views_bp = Blueprint('views', __name__)
 
-# --- 核心防禦工具 ---
 def is_safe_yaml(filename):
     return filename.lower().endswith(('.yaml', '.yml'))
 
 # --- 1. 專案管理 (Portal) ---
 @views_bp.route('/', methods=['GET', 'POST'])
 def portal():
+    # 物理隔離核心：定位到該使用者的專屬目錄
+    uid = paths.get_user_id()
+    user_root = os.path.join(paths.PROJECTS_ROOT, uid)
+    os.makedirs(user_root, exist_ok=True)
+    
     if request.method == 'POST':
         project_name = secure_filename(request.form.get('project_name', '').strip())
         if project_name:
-            # 建立專案目錄並初始化
+            # 建立物理資料夾
             paths.get_project_dir(project_name)
             session['current_project'] = project_name
             return redirect(url_for('views.portal'))
 
-    all_projects = []
+    display_projects = []
     project_files = {}
 
-    if os.path.exists(paths.PROJECTS_ROOT):
-        all_projects = [d for d in os.listdir(paths.PROJECTS_ROOT) 
-                        if os.path.isdir(os.path.join(paths.PROJECTS_ROOT, d))]
-        
-        for p in all_projects:
-            p_path = os.path.join(paths.PROJECTS_ROOT, p)
-            # 僅列出該專案資料夾下的 YAML 檔名
+    # 只掃描「我自己的地下室」，絕對看不到別人的資料夾
+    if os.path.exists(user_root):
+        all_dirs = [d for d in os.listdir(user_root) if os.path.isdir(os.path.join(user_root, d))]
+        for p in all_dirs:
+            display_projects.append(p)
+            p_path = os.path.join(user_root, p)
             files = [f for f in os.listdir(p_path) if is_safe_yaml(f)]
             project_files[p] = files
 
     return render_template('portal.html', 
-                           projects=all_projects, 
+                           projects=display_projects, 
                            project_files=project_files, 
                            current=session.get('current_project'))
 
-@views_bp.route('/export_file/<filename>')
-def export_file(filename):
-    curr_proj = session.get('current_project')
-    if not curr_proj:
-        abort(403, description="Please select a project first.")
-
-    safe_name = secure_filename(filename)
-    if not is_safe_yaml(safe_name):
-        abort(403, description="Access denied.")
-
-    # 確保只從目前選定的專案資料夾下載
-    project_dir = paths.get_project_dir(curr_proj)
-    return send_from_directory(project_dir, safe_name, as_attachment=True)
+@views_bp.route('/select_project/<name>')
+def select_project(name):
+    # 檢查該專案是否真的存在於該使用者的目錄下
+    uid = paths.get_user_id()
+    safe_name = secure_filename(name)
+    target_path = os.path.join(paths.PROJECTS_ROOT, uid, safe_name)
+    
+    if os.path.isdir(target_path):
+        session['current_project'] = safe_name
+    return redirect(url_for('views.portal'))
 
 @views_bp.route('/import', methods=['POST'])
 def import_project():
@@ -65,13 +64,13 @@ def import_project():
     path_parts = [p for p in first_path.split('/') if p]
     project_name = secure_filename(path_parts[0] if len(path_parts) > 1 else "Imported_Project")
 
+    # 會自動建立在 projects/{uid}/{project_name}
     target_dir = paths.get_project_dir(project_name)
     
     saved_count = 0
     for file in uploaded_files:
         fname = secure_filename(os.path.basename(file.filename))
-        # 保護關鍵檔名，避免被外部匯入覆蓋
-        if fname in ['ipa.yaml', 'master.yaml']:
+        if fname in ['ipa.yaml', 'master.yaml', 'config.yaml']:
             fname = f"imported_{fname}"
 
         if is_safe_yaml(fname):
@@ -84,17 +83,24 @@ def import_project():
     session['current_project'] = project_name
     return redirect(url_for('views.portal'))
 
-@views_bp.route('/select_project/<name>')
-def select_project(name):
-    session['current_project'] = secure_filename(name)
-    return redirect(url_for('views.portal'))
+@views_bp.route('/export_file/<filename>')
+def export_file(filename):
+    curr_proj = session.get('current_project')
+    if not curr_proj:
+        abort(403)
 
-# --- 2. 核心編輯器 (IPA, Syntax, Morphology) ---
+    safe_name = secure_filename(filename)
+    if not is_safe_yaml(safe_name):
+        abort(403)
+
+    # get_project_dir 內部已經帶有 uid 隔離
+    project_dir = paths.get_project_dir(curr_proj)
+    return send_from_directory(project_dir, safe_name, as_attachment=True)
+
+# --- 2. 核心編輯器 ---
 @views_bp.route('/ipa', methods=['GET', 'POST'])
 def ipa_tool():
-    # 使用重構後的 utils，獲取專案私有的 config
-    config, config_file = utils.get_config()
-    # IPA 參考資料維持讀取系統唯讀檔
+    config, _ = utils.get_config()
     ipa_data = utils.load_yaml(paths.DEFAULT_IPA)
     
     if request.method == 'POST':
@@ -122,10 +128,8 @@ def ipa_management():
         for key, value in request.form.items():
             if key.startswith('weight_'):
                 p = key.replace('weight_', '')
-                try:
-                    val = int(value or 10)
-                except ValueError:
-                    val = 10
+                try: val = int(value or 10)
+                except ValueError: val = 10
                 if p in c_list: weights['consonants'][p] = val
                 elif p in v_list: weights['vowels'][p] = val
         
@@ -141,12 +145,10 @@ def ipa_management():
 @views_bp.route('/syntax', methods=['GET', 'POST'])
 def syntax():
     config, _ = utils.get_config()
-    # 讀取系統唯讀範本作為結構參考，不讀取 PACKAGE_DIR 下的 master.yaml
     master = utils.load_yaml(paths.DEFAULT_MASTER)
     
     if request.method == 'POST':
         if request.form.get('action_type') == 'reset':
-            # 重置時，僅保留音韻設定，儲存到專案私有的 config
             utils.save_config({'phonology': config.get('phonology', {})})
             return redirect(url_for('views.syntax'))
             
@@ -167,7 +169,6 @@ def syntax():
             elif len(parts) == 2:
                 new_config.setdefault(parts[0], {})[parts[1]] = vals
                 
-        # 排序邏輯
         for raw_key in request.form.keys():
             if not raw_key.startswith('order|'): continue
             sorted_list = request.form.get(raw_key).split()
@@ -220,6 +221,5 @@ def lexicon():
 
 @views_bp.route('/dictionary')
 def view_dictionary():
-    # get_lexicon 內部也已經改為 Session 感知
     lex_data, _ = utils.get_lexicon()
     return render_template('dictionary.html', dictionary=lex_data.get('words', []))
