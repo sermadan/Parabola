@@ -39,7 +39,6 @@
 <div class="tabs">
     {% for sec_name, sec_data in config.items() if sec_name.startswith('sec_') and sec_name != 'sec_universal_features' %}
         <button type="button" class="tab-btn" data-sec="{{ sec_name }}" onclick="switchMainTab('{{ sec_name }}')">
-            {# 修正：對應 CSV 的 sec_ 鍵名，內部 span 留空由 i18n 填入 #}
             <span data-i18n="{{ sec_name }}"></span>
         </button>
     {% endfor %}

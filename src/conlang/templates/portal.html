@@ -1,197 +1,192 @@
 {% extends "layout.html" %}
 
-{% block page_name %}
-    <span data-i18n="nav_project_management"></span>
-{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
 <style>
-    /* 容器佈局 */
-    .hub-container {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
-        margin-top: 10px;
-    }
-
-    /* 左側側邊欄 */
-    .control-sidebar {
-        width: 320px;
-        flex-shrink: 0;
-        position: sticky;
-        top: 20px;
-    }
-
-    /* 右側主面板 */
-    .workspace-main {
-        flex-grow: 1;
-    }
-
-    .workspace-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-    }
-
-    /* 工作區卡片 */
-    .workspace-item {
-        position: relative;
-        padding: 24px;
+    /* --- Top Bar 樣式 --- */
+    .announcement-bar {
+        background: linear-gradient(90deg, #f39c12, #e67e22);
+        color: white;
+        padding: 12px 24px;
         border-radius: 12px;
-        border: 1px solid var(--border);
-        background: #ffffff;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        cursor: pointer;
-    }
-
-    .workspace-item:hover {
-        border-color: var(--text-sub);
-    }
-
-    .workspace-item.active {
-        border-color: var(--primary);
-        background: var(--primary-glass);
-        box-shadow: 0 4px 12px var(--primary-glass);
-    }
-
-    /* 專案頭像 */
-    .project-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
+        margin-bottom: 25px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 16px;
-        border: 1px solid var(--border);
-        background: var(--bg-card);
-        color: var(--primary);
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(230, 126, 34, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
+    .announcement-icon { font-size: 1.4rem; }
+    .announcement-content { flex-grow: 1; font-size: 0.95rem; line-height: 1.5; }
+    .announcement-content b { text-decoration: underline; }
 
-    .workspace-item.active .project-avatar {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
+    /* 核心佈局控制 */
+    .hub-container { display: flex; gap: 30px; align-items: flex-start; margin-top: 10px; }
+    .control-sidebar { width: 320px; flex-shrink: 0; position: sticky; top: 20px; }
+    .workspace-main { flex-grow: 1; }
+    .workspace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    
+    /* 強化 workspace-item */
+    .workspace-item { 
+        position: relative; padding: 24px; border-radius: 12px; border: 1px solid var(--border); 
+        background: #ffffff; transition: all 0.2s ease; display: flex; flex-direction: column; cursor: default; 
     }
-
-    /* 狀態標籤 */
-    .status-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
+    .workspace-item:hover { border-color: var(--text-sub); transform: translateY(-2px); }
+    .workspace-item.active { border-color: var(--primary); background: var(--primary-glass); box-shadow: 0 4px 12px var(--primary-glass); }
+    
+    .project-avatar { 
+        width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; 
+        font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; border: 1px solid var(--border); 
+        background: var(--bg-card); color: var(--primary); 
     }
-
-    .active-pill {
-        background: var(--primary);
-        color: white;
-        padding: 2px 10px;
-        border-radius: 50px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    /* 輔助文字 */
-    .project-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
-    }
-
-    /* 空狀態 */
-    .empty-state {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 80px 0;
-        background: var(--bg-card);
-        border-radius: 12px;
-        border: 2px dashed var(--border);
-        color: var(--text-sub);
-    }
+    .workspace-item.active .project-avatar { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    /* 狀態與標籤 */
+    .status-badge { position: absolute; top: 15px; right: 15px; }
+    .active-pill { background: var(--primary); color: white; padding: 2px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    
+    .import-zone { margin-top: 20px; padding: 20px; border: 2px dashed var(--border); border-radius: 12px; background: rgba(0,0,0,0.02); }
+    
+    .download-btn:active { transform: scale(0.9); }
+    .download-btn:hover { background: var(--primary-glass) !important; color: var(--primary) !important; }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="announcement-bar">
+    <div class="announcement-icon">⚠️</div>
+    <div class="announcement-content">
+        <strong data-i18n="top_bar_title">Cloud Persistence Warning:</strong> 
+        <span data-i18n="top_bar_msg">
+            Render data resets on reboot. Please <b>download all your YAMLs</b> via the 💾 button before leaving to prevent data loss.
+        </span>
+    </div>
+</div>
+
 <div class="hub-container">
-    
     <aside class="control-sidebar">
         <div class="sort-section-card">
             <div style="text-align: center; margin-bottom: 24px;">
                 <div style="font-size: 2rem; margin-bottom: 8px;">🚀</div>
-                <h2 style="margin: 0; font-size: 1.2rem; color: var(--text-main);" data-i18n="label_new_workspace"></h2>
+                <h2 style="margin: 0; font-size: 1.2rem; color: var(--text-main);" data-i18n="label_new_workspace">New Project</h2>
             </div>
 
             <form action="{{ url_for('views.portal') }}" method="POST">
                 <div style="margin-bottom: 20px;">
-                    <label class="label-caps" data-i18n="label_project_name"></label>
-                    <input type="text" name="project_name" required 
-                           class="inplace-input" 
-                           placeholder="e.g. Project_2026"
-                           pattern="[a-zA-Z0-9_-]+">
-                    <small class="label-caps" style="margin-top: 8px; text-transform: none; font-weight: 400;" data-i18n="label_project_name_hint"></small>
+                    <label class="label-caps" data-i18n="label_project_name">Project Name</label>
+                    <input type="text" name="project_name" required class="inplace-input" placeholder="e.g. MyConlang" pattern="[a-zA-Z0-9_-]+">
                 </div>
-                
                 <button type="submit" class="btn btn-save" style="width: 100%; justify-content: center;">
-                    <span data-i18n="btn_create_and_switch"></span>
+                    <span data-i18n="btn_create_and_switch">Create & Switch</span>
                 </button>
             </form>
-            
-            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--border);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="label-caps" style="margin: 0;" data-i18n="label_total_projects"></span>
-                    <span class="count-pill">{{ projects|length }}</span>
-                </div>
+
+            <div class="import-zone">
+                <p class="label-caps" style="margin-bottom: 10px; color: var(--secondary);" data-i18n="label_choose_local">Import Directory</p>
+                <form action="{{ url_for('views.import_project') }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="project_files" webkitdirectory directory multiple required style="font-size: 0.7rem; width: 100%; margin-bottom: 10px;">
+                    <button type="submit" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; height: 32px; justify-content: center;">
+                        <span data-i18n="label_choose">Upload Files</span>
+                    </button>
+                </form>
             </div>
         </div>
     </aside>
 
     <main class="workspace-main">
-        <div class="section-header" style="margin-top: 0; border: none;">
-            <h2 data-i18n="label_existing_workspaces"></h2>
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="margin: 0; font-size: 1.8rem;" data-i18n="label_project_portal">Project Portal</h1>
+                <p style="margin: 5px 0 0 0; opacity: 0.6;" data-i18n="label_existing_workspaces">Manage your constructed language projects</p>
+            </div>
+            <div style="text-align: right;">
+                <span class="label-caps" data-i18n="label_total_projects">Workspaces</span>
+                <span style="font-weight: 700; color: var(--primary); font-family: monospace; font-size: 1.2rem;">{{ projects|length }}</span>
+            </div>
         </div>
 
         <div class="workspace-grid">
             {% for p in projects %}
-            <div class="workspace-item {% if p == current %}active{% endif %}" 
-                onclick="window.location.href='{{ url_for('views.select_project', name=p) }}';">
-                
+            <div class="workspace-item {% if p == current %}active{% endif %}">
                 {% if p == current %}
                 <div class="status-badge">
-                    <span class="active-pill" data-i18n="status_in_use"></span>
+                    <span class="active-pill" data-i18n="status_in_use">Active</span>
                 </div>
                 {% endif %}
 
-                <div class="project-avatar">
-                    {{ p[0] | upper }}
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); word-break: break-all;">{{ p }}</h3>
-                    <div class="project-meta">
-                        <span class="dot {% if p == current %}active{% else %}inactive{% endif %}"></span>
-                        <span class="label-caps" style="margin: 0; opacity: 0.6; font-size: 0.7rem;" data-i18n="label_local_workspace"></span>
+                <div onclick="window.location.href='{{ url_for('views.select_project', name=p) }}';" 
+                     style="cursor: pointer; flex-grow: 1;">
+                    <div class="project-avatar">{{ p[0] | upper }}</div>
+                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); font-weight: 700;">{{ p }}</h3>
+                    
+                    <div class="tag-container" style="margin-top: 12px;">
+                        {% if project_files and p in project_files and project_files[p] %}
+                            {% for file in project_files[p] %}
+                            <div class="glass-pill" style="min-height: 24px; padding: 2px 8px; font-size: 0.7rem; opacity: 0.8;">
+                                📄 {{ file }}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                             <div class="drag-hint" style="font-size: 0.65rem;" data-i18n="label_empty_workspace">Empty Workspace</div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.03);">
-                    <button class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" style="width: 100%; border-radius: 8px; justify-content: center;">
-                        <span data-i18n="btn_switch_to"></span>
+                <div style="margin-top: 20px; display: flex; gap: 8px; position: relative; z-index: 10;">
+                    <a href="{{ url_for('views.select_project', name=p) }}" 
+                       class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" 
+                       style="flex: 1; border-radius: 8px; justify-content: center; text-decoration: none; display: flex; align-items: center;">
+                        <span data-i18n="btn_switch_to">Switch</span>
+                    </a>
+                    
+                    <button type="button"
+                            class="btn btn-outline download-btn" 
+                            style="width: 42px; padding: 0; justify-content: center; border-radius: 8px; cursor: pointer;"
+                            data-project="{{ p }}"
+                            data-files='{{ project_files[p] | tojson if project_files and p in project_files else "[]" }}'
+                            title="Download All YAMLs">
+                        💾
                     </button>
                 </div>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <div style="font-size: 3rem; margin-bottom: 12px; opacity: 0.5;">📁</div>
-                <p class="label-caps" style="margin: 0;" data-i18n="msg_no_workspaces"></p>
             </div>
             {% endfor %}
         </div>
     </main>
 </div>
+
+<script>
+document.addEventListener('click', function(e) {
+    const downloadBtn = e.target.closest('.download-btn');
+    if (!downloadBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const projectName = downloadBtn.getAttribute('data-project');
+    const filesStr = downloadBtn.getAttribute('data-files');
+    
+    let files = [];
+    try {
+        files = JSON.parse(filesStr);
+    } catch (err) {
+        console.error("JSON parse error:", err);
+    }
+
+    if (!files || files.length === 0) {
+        alert("No YAML files found.");
+        return;
+    }
+    
+    files.forEach((filename, index) => {    
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = `/export_file/${projectName}/${filename}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }, index * 300); 
+    });
+});
+</script>
 {% endblock %}

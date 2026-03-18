@@ -1,22 +1,77 @@
-import os, json
-from flask import Blueprint, render_template, request, redirect, url_for, session
+import os, json, zipfile, io
+from flask import Blueprint, render_template, request, redirect, url_for, session, send_file
 import conlang.paths as paths
 from conlang.utils import utils
 
 views_bp = Blueprint('views', __name__)
 
-# --- 1. 專案管理 ---
+# --- 1. 專案管理 (Portal) ---
 @views_bp.route('/', methods=['GET', 'POST'])
 def portal():
     if request.method == 'POST':
         project_name = request.form.get('project_name', '').strip()
         if project_name:
+            # 確保資料夾存在
             paths.get_project_dir(project_name)
             session['current_project'] = project_name
             return redirect(url_for('views.portal'))
-    all_projects = [d for d in os.listdir(paths.PROJECTS_ROOT) 
-                    if os.path.isdir(os.path.join(paths.PROJECTS_ROOT, d))] if os.path.exists(paths.PROJECTS_ROOT) else []
-    return render_template('portal.html', projects=all_projects, current=session.get('current_project'))
+
+    # 1. 取得所有專案名稱
+    all_projects = []
+    project_files = {} # 用來存每個專案下有哪些 YAML
+
+    if os.path.exists(paths.PROJECTS_ROOT):
+        all_projects = [d for d in os.listdir(paths.PROJECTS_ROOT) 
+                        if os.path.isdir(os.path.join(paths.PROJECTS_ROOT, d))]
+        
+        # 2. 掃描每個專案資料夾下的檔案（解決 No file available）
+        for p in all_projects:
+            p_path = os.path.join(paths.PROJECTS_ROOT, p)
+            # 只列出實體 YAML 檔
+            files = [f for f in os.listdir(p_path) if f.endswith(('.yaml', '.yml'))]
+            project_files[p] = files
+
+    return render_template('portal.html', 
+                           projects=all_projects, 
+                           project_files=project_files, 
+                           current=session.get('current_project'))
+
+# 廢棄原有的 export_project (ZIP)，改用單檔導出配合前端 JS 批量觸發
+@views_bp.route('/export_file/<project_name>/<filename>')
+def export_file(project_name, filename):
+    project_dir = paths.get_project_dir(project_name)
+    file_path = os.path.join(project_dir, filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    return "File not found", 404
+
+@views_bp.route('/import', methods=['POST'])
+def import_project():
+    uploaded_files = request.files.getlist('project_files')
+
+    if not uploaded_files or uploaded_files[0].filename == '':
+        return "Error: No files selected", 400
+
+    # 判斷專案名稱：優先取資料夾路徑，若無則取檔名
+    first_path = uploaded_files[0].filename
+    path_parts = [p for p in first_path.split('/') if p]
+    project_name = path_parts[0] if len(path_parts) > 1 else "Imported_Project"
+
+    target_dir = paths.get_project_dir(project_name)
+    os.makedirs(target_dir, exist_ok=True)
+
+    saved_count = 0
+    for file in uploaded_files:
+        fname = os.path.basename(file.filename)
+        if fname.endswith(('.yaml', '.yml')):
+            file.save(os.path.join(target_dir, fname))
+            saved_count += 1
+            
+    if saved_count == 0:
+        return "Error: No YAML files found in the upload.", 400
+
+    session['current_project'] = project_name
+    return redirect(url_for('views.portal'))
 
 @views_bp.route('/select_project/<name>')
 def select_project(name):
