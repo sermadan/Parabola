@@ -1,5 +1,4 @@
-import os
-import json
+import os, json, shutil
 from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory, abort
 from werkzeug.utils import secure_filename
 import conlang.paths as paths
@@ -70,7 +69,7 @@ def import_project():
     saved_count = 0
     for file in uploaded_files:
         fname = secure_filename(os.path.basename(file.filename))
-        if fname in ['ipa.yaml', 'master.yaml', 'config.yaml']:
+        if fname in ['ipa.yaml', 'master.yaml']:
             fname = f"imported_{fname}"
 
         if is_safe_yaml(fname):
@@ -96,6 +95,19 @@ def export_file(filename):
     # get_project_dir 內部已經帶有 uid 隔離
     project_dir = paths.get_project_dir(curr_proj)
     return send_from_directory(project_dir, safe_name, as_attachment=True)
+
+@views_bp.route('/delete_project/<name>', methods=['POST'])
+def delete_project(name):
+    uid = paths.get_user_id()
+    target_path = os.path.join(paths.PROJECTS_ROOT, uid, secure_filename(name))
+    
+    if os.path.exists(target_path) and os.path.isdir(target_path):
+        shutil.rmtree(target_path)
+        if session.get('current_project') == name:
+            session.pop('current_project', None)
+            
+    return redirect(url_for('views.portal'))
+
 
 # --- 2. 核心編輯器 ---
 @views_bp.route('/ipa', methods=['GET', 'POST'])
