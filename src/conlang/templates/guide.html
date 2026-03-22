@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block page_name %}
+    <span data-i18n="nav_guide"></span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .guide-body { line-height: 1.8; color: var(--text-main); }
+    .guide-body h1 { border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 20px; }
+    .guide-body h2 { margin-top: 30px; color: var(--primary); }
+    .guide-body table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #fff; }
+    .guide-body th, .guide-body td { border: 1px solid var(--border); padding: 12px; }
+    .guide-body th { background: var(--bg-surface); font-weight: bold; }
+    .guide-body code { background: #f1f3f5; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 載入 MathJax 腳本 -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],  // 支援 $ 內聯公式
+            displayMath: [['$$', '$$'], ['\\[', '\\]']], // 支援 $$ 區塊公式
+            processEscapes: True
+        }
+    };
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="guide-body">
+        {# 使用 safe 過濾器讓 HTML 正常顯示 #}
+        {{ content | safe }}
+    </div>
+</div>
+{% endblock %}

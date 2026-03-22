@@ -1,4 +1,4 @@
-import os, json, shutil
+import os, json, shutil, markdown
 from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory, abort
 from werkzeug.utils import secure_filename
 import conlang.paths as paths
@@ -28,7 +28,6 @@ def portal():
     display_projects = []
     project_files = {}
 
-    # 只掃描「我自己的地下室」，絕對看不到別人的資料夾
     if os.path.exists(user_root):
         all_dirs = [d for d in os.listdir(user_root) if os.path.isdir(os.path.join(user_root, d))]
         for p in all_dirs:
@@ -235,3 +234,34 @@ def lexicon():
 def view_dictionary():
     lex_data, _ = utils.get_lexicon()
     return render_template('dictionary.html', dictionary=lex_data.get('words', []))
+
+# --- 4. 使用說明 (Guide) ---
+@views_bp.route('/guide')
+def show_guide():
+    # 獲取目前 session 語系，預設為 zh (繁體中文)
+    lang = session.get('lang', 'zh')
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    docs_dir = os.path.join(base_dir, 'docs')
+    
+    # 組合檔案名稱，例如 guide_zh.md
+    filename = f"guide_{lang}.md"
+    md_path = os.path.join(docs_dir, filename)
+    
+    # 安全檢查：如果檔案不存在，預設回傳中文版；若中文版也不存在，則報錯
+    if not os.path.exists(md_path):
+        md_path = os.path.join(docs_dir, 'guide_zh.md')
+        if not os.path.exists(md_path):
+            return "Guide file not found.", 404
+    
+    with open(md_path, 'r', encoding='utf-8') as f:
+        md_text = f.read()
+    
+    html_content = markdown.markdown(md_text, extensions=[
+        'tables', 
+        'fenced_code', 
+        'toc',
+        'nl2br'
+    ])
+    
+    return render_template('guide.html', content=html_content)

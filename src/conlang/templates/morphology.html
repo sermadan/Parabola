@@ -106,6 +106,7 @@
 <script>
     const FULL_CONFIG = {{ config | tojson }};
 
+    // 切換分頁
     function switchMainTab(secId) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.sec === secId));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `panel-${secId}`));
@@ -113,11 +114,13 @@
         localStorage.setItem('morph_last_tab', secId);
     }
 
+    // 語系轉換包裝
     function i18nSpan(key) {
         const translated = (window.t && typeof window.t === 'function') ? window.t(key) : key;
         return `<span data-i18n="${key}">${translated}</span>`;
     }
 
+    // 鍵盤 Enter 導航
     function handleMatrixNav(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -131,6 +134,7 @@
         }
     }
 
+    // 從 Config 抓取選項清單
     function getOptionsFromConfig(sourceKey, featId) {
         const root = FULL_CONFIG[sourceKey] || FULL_CONFIG['sec_universal_features'];
         if (!root) return [];
@@ -145,6 +149,7 @@
         return [];
     }
 
+    // 生成矩陣
     function generateMatrix(secName) {
         const container = document.getElementById(`matrix-container-${secName}`);
         if (!container) return;
@@ -177,12 +182,12 @@
         if (window.applyTranslations) setTimeout(() => { window.applyTranslations(); }, 50);
     }
 
+    // 渲染清單 (單維度)
     function renderList(container, secName, dim, existing) {
         let html = `<div class="matrix-wrapper"><table class="morph-matrix-table">
             <thead><tr><th style="width:150px;">${i18nSpan(dim.id)}</th><th>詞綴 / 變化</th></tr></thead><tbody>`;
         dim.items.forEach(item => {
             const val = item.value || item;
-            // 重要：確保抓取 marker 屬性
             const saved = (existing[val] && existing[val][0]) ? existing[val][0].marker : '';
             html += `<tr><td class="matrix-label-col">${i18nSpan(val)}</td>
                 <td><textarea name="matrix|${secName}|${val}|content[]" class="word-cell-textarea" onkeydown="handleMatrixNav(event)">${saved}</textarea></td></tr>`;
@@ -190,6 +195,7 @@
         container.innerHTML = html + `</tbody></table></div>`;
     }
 
+    // 渲染表格 (多維度)
     function renderTable(container, secName, dims, existing) {
         const yDim = dims[0], xDim = dims[1], extraDims = dims.slice(2);
         let combos = [[]];
@@ -216,7 +222,6 @@
                 xDim.items.forEach(x => {
                     const xVal = x.value || x;
                     const key = [yVal, xVal, ...extra].join('+');
-                    // 重要：從 existing 獲取正確的數據，並確保 textarea name 格式與後端對齊
                     const saved = (existing[key] && existing[key][0]) ? existing[key][0].marker : '';
                     tableHtml += `<td><textarea name="matrix|${secName}|${key}|content[]" class="word-cell-textarea" onkeydown="handleMatrixNav(event)">${saved}</textarea></td>`;
                 });
@@ -227,7 +232,23 @@
         container.innerHTML = fullHtml;
     }
 
+    // 初始化與檢查
     document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. 檢查是否有任何語法設定 ---
+        const checkBools = (sec) => Object.values(FULL_CONFIG[sec]?.bools || {}).some(v => v === true);
+        
+        const hasFeats = checkBools('sec_noun_syntax') || 
+                         checkBools('sec_verb_syntax') || 
+                         checkBools('sec_adj_syntax') || 
+                         checkBools('sec_universal_features');
+
+        if (!hasFeats) {
+            alert("⚠️ 目前還沒有設定語法功能！\n請先到「語法系統 (Syntax)」頁面勾選你想定義的功能（如：數、格、時態）並儲存。");
+            window.location.href = "{{ url_for('views.syntax') }}"; 
+            return;
+        }
+
+        // --- 2. 正常加載頁面 ---
         const lastTab = localStorage.getItem('morph_last_tab') || 'sec_noun_syntax';
         setTimeout(() => switchMainTab(lastTab), 100);
     });

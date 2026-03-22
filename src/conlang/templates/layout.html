@@ -50,6 +50,9 @@
             </center>
         </div>
         <ul class="nav-list">
+            <li class="nav-item {% if request.path == '/guide' %}active{% endif %}">
+                <a href="/guide"><span data-i18n="nav_guide"></span></a>
+            </li>
             <li class="nav-item {% if request.path == '/syntax' %}active{% endif %}">
                 <a href="/syntax"><span data-i18n="nav_syntax_config"></span></a>
             </li>

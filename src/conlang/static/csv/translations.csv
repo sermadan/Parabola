@@ -1,6 +1,7 @@
 "category","key","en","zh"
 "app","app_title","Parabola","Parabola"
 
+"nav","nav_guide","Instructions","使用說明"
 "nav","nav_syntax_config","Syntax Configuration","語法配置"
 "nav","nav_ipa_system","IPA System","音標系統"
 "nav","nav_ipa_management","IPA Management","音標管理"

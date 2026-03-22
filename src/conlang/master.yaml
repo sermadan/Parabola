@@ -12,8 +12,19 @@
   settings:
     "feat_alignment": 
       type: single
-      options: ["align_nominative", "align_ergative", "align_transitive", "align_active", "align_tripartite"]
-    
+      # 直接在選項內定義連動路徑：Section|Feature|Value
+      options: 
+        - value: "align_nominative"
+          impacts: "sec_universal_features|feat_case|case_nominative,sec_universal_features|feat_case|case_accusative"
+        - value: "align_ergative"
+          impacts: "sec_universal_features|feat_case|case_ergative,sec_universal_features|feat_case|case_absolutive"
+        - value: "align_tripartite"
+          impacts: "sec_universal_features|feat_case|case_agentive,sec_universal_features|feat_case|case_patientive,sec_universal_features|feat_case|case_transitive"
+        - value: "align_active"
+          impacts: "sec_universal_features|feat_case|case_agentive,sec_universal_features|feat_case|case_patientive"
+        - value: "align_transitive"
+          impacts: "sec_universal_features|feat_case|case_direct,sec_universal_features|feat_case|case_oblique"
+
     "feat_case": 
       type: multi
       groups:
@@ -26,7 +37,7 @@
     "feat_number": { type: multi, options: ["num_singular", "num_dual", "num_trial", "num_plural", "num_paucal"] }
     "feat_person": { type: multi, options: ["per_1st", "per_1st_inc", "per_1st_exc", "per_2nd", "per_2nd_pol", "per_3rd", "per_4th"] }
 
-# --- 3. 名詞語法 (決定維度如何套用到名詞) ---
+# --- 3. 名詞語法 ---
 "sec_noun_syntax":
   bools: ["feat_case", "feat_number", "feat_gender", "feat_person", "feat_definiteness", "feat_possession"]
   settings:
@@ -34,7 +45,7 @@
     "feat_definiteness": { type: multi, options: ["def_definite", "def_indefinite", "def_partitive"] }
     "feat_possession": { type: multi, options: ["poss_alienable", "poss_inalienable"] }
 
-# --- 4. 動詞語法 (決定維度如何套用到動詞) ---
+# --- 4. 動詞語法 ---
 "sec_verb_syntax":
   bools: ["feat_tense", "feat_mood", "feat_aspect", "feat_voice", "feat_negation", "feat_person", "feat_number", "feat_gender"]
   settings:
@@ -42,9 +53,6 @@
     "feat_aspect": { type: multi, options: ["aspect_perf", "aspect_imperf", "aspect_prog", "aspect_hab", "aspect_iter"] }
     "feat_mood": { type: multi, options: ["mood_ind", "mood_imp", "mood_subj", "mood_cond", "mood_opt"] }
     "feat_voice": { type: multi, options: ["voice_act", "voice_pass", "voice_mid", "voice_caus", "voice_antipass"] }
-    "feat_negation_mark": { type: single, options: ["neg_affix", "neg_particle", "neg_auxiliary"] }
-    
-    # 這裡不再用 v_gen_agree_subj，而是讓使用者直接勾選要「一致」的對象屬性
     "rule_agreement_target": { type: multi, options: ["target_subject", "target_object", "target_indirect_object"] }
 
 # --- 5. 形容詞語法 ---
