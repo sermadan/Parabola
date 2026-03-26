@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import session_guard, end_guard %}
 
 {% block page_name %}
     <span data-i18n="nav_syntax_config"></span>
@@ -101,6 +102,8 @@
 {% endblock %}
 
 {% block content %}
+    {{ session_guard() }}
+
 <div class="tabs">
     <button type="button" class="tab-btn active" data-tab="config" onclick="switchMainTab('config')">
         <span data-i18n="label_settings"></span>
@@ -380,4 +383,5 @@
         }
     });
 </script>
+{{ end_guard() }}
 {% endblock %}

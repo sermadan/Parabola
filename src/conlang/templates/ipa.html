@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import session_guard, end_guard %}
 
 {% block page_name %}
     <span data-i18n="nav_ipa_system"></span>
@@ -18,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-
+{{ session_guard() }}
 <form id="main-form" method="POST">
     <div class="tabs">
         <button type="button" class="tab-btn active" onclick="switchMainTab('consonant')">
@@ -274,4 +275,5 @@ function analyzeCategories() {
         f.submit();
     };
 </script>
+{{ end_guard() }}
 {% endblock %}

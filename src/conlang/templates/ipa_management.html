@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import session_guard, end_guard, ipa_check_guard %}
 
 {% block page_name %}
     <span data-i18n="nav_ipa_management"></span>
@@ -48,6 +49,8 @@
 {% endblock %}
 
 {% block content %}
+    {{ session_guard() }}
+    {{ ipa_check_guard(config) }}
 
     <form id="main-form" method="POST" action="ipa_management">
         {% set phonology = config.phonology | default({}) %}
@@ -123,13 +126,6 @@
                 (phon.inventory_vowels && phon.inventory_vowels.length > 0)
             );
 
-            if (!hasIPA || !hasPhonology) {
-                console.log("Debug - Config:", configData); // 偵錯用
-                alert("⚠️ 目前還沒有設定音標資料！\n請先到「音標系統」頁面選取你的 IPA 符號並儲存。");
-                window.location.href = "{{ url_for('views.ipa_tool') }}"; 
-                return;
-            }
-            
             initAll(ipaData, configData);
             initCategories();
             
@@ -137,4 +133,5 @@
             switchMainTab(lastTab);
         });
     </script>
+    {{ end_guard() }}
 {% endblock %}

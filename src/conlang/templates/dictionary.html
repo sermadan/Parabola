@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import session_guard, end_guard %}
 
 {% block page_name %}
     <span data-i18n="nav_dictionary">Dictionary</span>
@@ -9,6 +10,7 @@
 {% endblock %}
 
 {% block content %}
+{{ session_guard() }}
 <div class="page-controls">
     <div class="search-group">
         <div class="search-box">
@@ -206,4 +208,5 @@
         });
     }
 </script>
+{{ end_guard() }}
 {% endblock %}

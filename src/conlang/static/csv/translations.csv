@@ -311,6 +311,10 @@
 "alert","alert_unknown_error","Unknown error","不明錯誤"
 "alert","alert_connection_error","Server connection error","伺服器連線錯誤"
 "alert","alert_save_failed","Save failed","儲存失敗"
+"alert","alert_no_project_found","Please create a project first","請先建立專案"
+"alert","alert_no_syntax_features","Please select some syntax features first","請先選擇一些語法特徵"
+"alert","alert_no_ipa_data","Please select some IPA first","請先選擇一些音標"
+
 
 "status","status_click_edit","Click to Edit","點選右下角以開始編輯"
 "status","status_editing","🟢 Editing","🟢 編輯中"

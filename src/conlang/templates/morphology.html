@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import session_guard, end_guard, syntax_check_guard %}
 
 {% block page_name %}
     <span data-i18n="nav_morphology_management"></span>
@@ -42,6 +43,9 @@
 {% endblock %}
 
 {% block content %}
+    {{ session_guard() }}
+    {{ syntax_check_guard(config) }}
+
 <div class="tabs">
     {% set nav_sections = ['sec_noun_syntax', 'sec_verb_syntax', 'sec_adj_syntax'] %}
     {% for sec_id in nav_sections %}
@@ -52,7 +56,10 @@
 </div>
 
 <form id="morph-form" method="POST">
-    {% for sec_name, sec_data in config.items() if sec_name in nav_sections %}
+    {# 1. 確保 config 即使為空也是字典型態，避免 .items() 報錯 #}
+    {% set safe_config = config if config is mapping else {} %}
+    
+    {% for sec_name, sec_data in safe_config.items() if sec_name in nav_sections %}
     <div id="panel-{{ sec_name }}" class="tab-content">
         <div class="morph-layout">
             <aside class="dim-config-card">
@@ -63,35 +70,46 @@
 
                 <div class="dim-group-label">Universal Features</div>
                 <div class="dim-checkbox-list">
-                    {% set univ_bools = config.get('sec_universal_features', {}).get('bools') or {} %}
-                    {% for feat_id, is_on in univ_bools.items() if is_on %}
-                        {% if feat_id != 'feat_alignment' %}
-                        {% set val = "univ|" + feat_id %}
-                        <label class="glass-pill" style="justify-content: flex-start; width: 100%; cursor: pointer; padding: 10px 15px;">
-                            <input type="checkbox" name="dims|{{ sec_name }}[]" class="matrix-dim" value="{{ val }}" 
-                                {% if val in config.get('morphology', {}).get(sec_name, {}).get('selected_matrix_dims', []) %}checked{% endif %} 
-                                onchange="generateMatrix('{{ sec_name }}')">
-                            <small style="color:var(--primary); font-weight:900; margin-right:8px;">[U]</small>
-                            <span data-i18n="{{ feat_id }}"></span>
-                        </label>
-                        {% endif %}
-                    {% endfor %}
+                    {# 2. 使用雙重保險獲取 univ_bools #}
+                    {% set univ_root = safe_config.get('sec_universal_features', {}) %}
+                    {% set univ_bools = univ_root.get('bools', {}) if univ_root is mapping else {} %}
+                    
+                    {# 3. 只有確定是 mapping (字典) 才跑 items() #}
+                    {% if univ_bools is mapping %}
+                        {% for feat_id, is_on in univ_bools.items() if is_on %}
+                            {% if feat_id != 'feat_alignment' %}
+                            {% set val = "univ|" + feat_id %}
+                            <label class="glass-pill" style="justify-content: flex-start; width: 100%; cursor: pointer; padding: 10px 15px;">
+                                <input type="checkbox" name="dims|{{ sec_name }}[]" class="matrix-dim" value="{{ val }}" 
+                                    {% if val in safe_config.get('morphology', {}).get(sec_name, {}).get('selected_matrix_dims', []) %}checked{% endif %} 
+                                    onchange="generateMatrix('{{ sec_name }}')">
+                                <small style="color:var(--primary); font-weight:900; margin-right:8px;">[U]</small>
+                                <span data-i18n="{{ feat_id }}"></span>
+                            </label>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
                 </div>
 
                 <div class="dim-group-label">Local Features</div>
                 <div class="dim-checkbox-list">
-                    {% set local_bools = config.get(sec_name, {}).get('bools') or {} %}
-                    {% for feat_id, is_on in local_bools.items() if is_on %}
-                        {% if feat_id not in univ_bools %}
-                        {% set val = "local|" + feat_id %}
-                        <label class="glass-pill" style="justify-content: flex-start; width: 100%; cursor: pointer; padding: 10px 15px;">
-                            <input type="checkbox" name="dims|{{ sec_name }}[]" class="matrix-dim" value="{{ val }}" 
-                                {% if val in config.get('morphology', {}).get(sec_name, {}).get('selected_matrix_dims', []) %}checked{% endif %} 
-                                onchange="generateMatrix('{{ sec_name }}')">
-                            <span data-i18n="{{ feat_id }}"></span>
-                        </label>
-                        {% endif %}
-                    {% endfor %}
+                    {# 4. 處理 Local Bools 的安全獲取 #}
+                    {% set sec_root = safe_config.get(sec_name, {}) %}
+                    {% set local_bools = sec_root.get('bools', {}) if sec_root is mapping else {} %}
+                    
+                    {% if local_bools is mapping %}
+                        {% for feat_id, is_on in local_bools.items() if is_on %}
+                            {% if feat_id not in univ_bools %}
+                            {% set val = "local|" + feat_id %}
+                            <label class="glass-pill" style="justify-content: flex-start; width: 100%; cursor: pointer; padding: 10px 15px;">
+                                <input type="checkbox" name="dims|{{ sec_name }}[]" class="matrix-dim" value="{{ val }}" 
+                                    {% if val in safe_config.get('morphology', {}).get(sec_name, {}).get('selected_matrix_dims', []) %}checked{% endif %} 
+                                    onchange="generateMatrix('{{ sec_name }}')">
+                                <span data-i18n="{{ feat_id }}"></span>
+                            </label>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </aside>
 
@@ -242,15 +260,10 @@
                          checkBools('sec_adj_syntax') || 
                          checkBools('sec_universal_features');
 
-        if (!hasFeats) {
-            alert("⚠️ 目前還沒有設定語法功能！\n請先到「語法系統 (Syntax)」頁面勾選你想定義的功能（如：數、格、時態）並儲存。");
-            window.location.href = "{{ url_for('views.syntax') }}"; 
-            return;
-        }
-
         // --- 2. 正常加載頁面 ---
         const lastTab = localStorage.getItem('morph_last_tab') || 'sec_noun_syntax';
         setTimeout(() => switchMainTab(lastTab), 100);
     });
 </script>
+{{ end_guard() }}
 {% endblock %}
