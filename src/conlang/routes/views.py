@@ -155,40 +155,61 @@ def ipa_management():
 
 @views_bp.route('/syntax', methods=['GET', 'POST'])
 def syntax():
-    config, _ = utils.get_config()
+    # 呼叫修正後的 utils，has_config 在第一次進場時會是 False，config 會是空字典
+    config, has_config = utils.get_config()
     master = utils.load_yaml(paths.DEFAULT_MASTER)
     
     if request.method == 'POST':
+        # 處理重置按鈕
         if request.form.get('action_type') == 'reset':
             utils.save_config({'phonology': config.get('phonology', {})})
             return redirect(url_for('views.syntax'))
             
-        new_config = config.copy()
-        for key in list(new_config.keys()):
-            if key.startswith('sec_'): del new_config[key]
-            
+        # --- 重要：建立一個全新的字典，只保留音韻資料 ---
+        # 這樣就算 utils 意外傳回了 master 的內容，存檔時也會被過濾掉
+        new_config = {'phonology': config.get('phonology', {})}
+        
+        # 1. 處理所有表單欄位 (bools, settings, root)
         for raw_key, values in request.form.lists():
-            if '|' not in raw_key or raw_key.startswith('order|') or raw_key == 'action_type': continue
-            parts = raw_key.split('|')
+            # 跳過非設定欄位與排序欄位
+            if '|' not in raw_key or raw_key.startswith('order|') or raw_key == 'action_type': 
+                continue
+                
+            parts = raw_key.split('|') # 例如: ['settings', 'Morphology', 'Aspect']
             vals = [v.strip() for v in values if v.strip()]
             if not vals: continue
             
+            # 根據 prefix 決定寫入結構
             if parts[0] == 'bools':
+                # bools|section|feature
                 new_config.setdefault(parts[1], {}).setdefault('bools', {})[parts[2]] = True
             elif parts[0] == 'settings':
+                # settings|section|feature
                 new_config.setdefault(parts[1], {}).setdefault('settings', {})[parts[2]] = vals
+            elif parts[0] == 'root':
+                # root|section|feature (對應 Morphology Type 這種結構)
+                new_config.setdefault(parts[1], {})[parts[2]] = vals
             elif len(parts) == 2:
+                # 兼容處理 [section, feature] 格式
                 new_config.setdefault(parts[0], {})[parts[1]] = vals
                 
+        # 2. 處理排序 (Order)
         for raw_key in request.form.keys():
             if not raw_key.startswith('order|'): continue
+            
+            # 取得前端排序後的字串 (空格分隔)
             sorted_list = request.form.get(raw_key).split()
             p = raw_key.replace('order|', '').split('|')
+            
+            # 排序 settings 內的資料: order|settings|section|feature
             if p[0] == 'settings' and len(p) == 3:
                 sec, feat = p[1], p[2]
                 if sec in new_config and 'settings' in new_config[sec] and feat in new_config[sec]['settings']:
                     curr = new_config[sec]['settings'][feat]
+                    # 按照 sorted_list 的順序過濾並重排
                     new_config[sec]['settings'][feat] = [x for x in sorted_list if x in curr]
+            
+            # 排序 root 內的資料: order|section|feature
             elif len(p) == 2:
                 sec, cat = p[0], p[1]
                 if sec in new_config and cat in new_config[sec]:
@@ -196,12 +217,32 @@ def syntax():
                     if isinstance(curr, list):
                         new_config[sec][cat] = [x for x in sorted_list if x in curr]
                         
+        # 3. 執行存檔
         utils.save_config(new_config)
         return redirect(url_for('views.syntax'))
+
+    # GET 請求：config 只要是空的，前端 HTML 的 checked 就不會觸發
     return render_template('syntax.html', master=master, config=config)
 
-@views_bp.route('/morphology/inflectional', methods=['GET', 'POST'])
-def morph_inflectional():
+@views_bp.route('/morphology')
+def morphology_index():
+    config, _ = utils.get_config()
+
+    project_name = session.get('current_project')
+    if not project_name:
+        return redirect(url_for('views.portal'))
+
+    # 依照你的層級路徑抓取值
+    try:
+        # sec_morphology_type -> settings -> opt_synthetic_type (取第一個)
+        synth_type = config['sec_morphology_type']['settings']['opt_synthetic_type'][0]
+    except (KeyError, IndexError, TypeError):
+        synth_type = None
+
+    return render_template('morphology.html', synth_type=synth_type)
+
+@views_bp.route('/morphology/fusional', methods=['GET', 'POST'])
+def morph_fusional():
     config, _ = utils.get_config()
     if request.method == 'POST':
         new_morphology = {}
@@ -221,8 +262,8 @@ def morph_inflectional():
         
         config['morphology'] = new_morphology
         utils.save_config(config)
-        return redirect(url_for('views.morph_inflectional'))
-    return render_template('morph_inflectional.html', config=config)
+        return redirect(url_for('views.morph_fusional'))
+    return render_template('morph_fusional.html', config=config)
 
 @views_bp.route('/morphology/agglutinative', methods=['GET', 'POST'])
 def morph_agglutinative():

@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block extra_css %}
+<style>
+    .morph-hub {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    
+    .status-card {
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin: 20px 0;
+        background: var(--bg-card);
+    }
+
+    .type-indicator {
+        font-family: monospace;
+        font-size: 1.2rem;
+        color: var(--primary);
+        font-weight: bold;
+        display: block;
+        margin: 10px 0;
+    }
+
+    .btn-enter {
+        background: var(--primary);
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-enter:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="morph-hub">
+    <div style="font-size: 3rem; margin-bottom: 10px;">🧬</div>
+    <h2 data-i18n="nav_morphology_management">Morphology Management</h2>
+    <p style="color: var(--text-sub);">正在讀取當前專案的形態學設定...</p>
+
+    <div class="status-card">
+        <span class="label-caps" data-i18n="label_current_project">Current Project</span>
+        <strong style="display: block; font-size: 1.4rem;">{{ session.get('current_project') }}</strong>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+        
+        <span class="label-caps">Detected Type</span>
+        <span class="type-indicator">{{ synth_type or 'Undefined' }}</span>
+    </div>
+
+    <div id="action-area">
+        <button onclick="checkTypeAndGo('{{ synth_type }}')" class="btn-enter">
+            <span data-i18n="btn_switch_to">Enter Workspace</span>
+        </button>
+    </div>
+</div>
+
+<script>
+function checkTypeAndGo(type) {
+    // 1. 定義路由映射
+    const typeRoutes = {
+        'type_fusional': '/morphology/fusional',
+        'type_agglutinative': '/morphology/agglutinative'
+    };
+
+    // 2. 執行判斷
+    if (typeRoutes[type]) {
+        // 成功：跳轉至對應子分類
+        window.location.href = typeRoutes[type];
+    } else {
+        // 失敗：彈出錯誤視窗並留在原處
+        alert(
+            "⚠️ 類型不支援 (Unsupported Type)\n\n" +
+            "目前的形態學類型設定為: " + (type || "空值") + "\n" +
+            "系統目前僅支援 Fusional 或 Agglutinative。\n" +
+            "請至「語法配置」修改 config.yaml 以繼續。"
+        );
+    }
+}
+
+// 如果你想讓它進頁面自動跳轉，可以解開下面這段：
+window.onload = () => { if('{{ synth_type }}') checkTypeAndGo('{{ synth_type }}'); };
+</script>
+{% endblock %}

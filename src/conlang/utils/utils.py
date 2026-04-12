@@ -17,31 +17,40 @@ def save_yaml(path, data):
     with open(path, 'w', encoding='utf-8') as f:
         yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
 
-def get_current_project_file(filename, seed_template=None):
+def get_current_project_file(filename, seed_template=None, auto_copy=True):
     """
     獲取檔案路徑。
-    如果檔案不存在且提供了 seed_template，則從模板初始化一份。
+    auto_copy: 如果為 False，則不執行 shutil.copy
     """
     p_name = session.get('current_project')
     if not p_name:
-        # 如果沒選專案，直接讀取系統預設模板 (防止汙染)
         return seed_template if seed_template else ""
         
     project_dir = paths.get_project_dir(p_name)
     target_path = os.path.join(project_dir, filename)
     
-    # --- 自動初始化邏輯 ---
-    # 如果該專案內還沒有這個檔案，就從範本拷貝一份
+    # 只有當檔案不存在、有提供範本、且 auto_copy 為 True 時才拷貝
     if not os.path.exists(target_path) and seed_template and os.path.exists(seed_template):
-        shutil.copy(seed_template, target_path)
-        
+        if auto_copy:
+            shutil.copy(seed_template, target_path)
+        else:
+            # 不拷貝，直接返回路徑，讓外層知道檔案目前還不存在
+            return target_path
+            
     return target_path
 
 def get_config():
-    """獲取 config (master.yaml 的副本)"""
-    # 專案內的 master 資料我們統一定名為 config.yaml 以示區別
-    path = get_current_project_file('config.yaml', seed_template=paths.DEFAULT_MASTER)
-    return load_yaml(path), path
+    # 這裡加入 auto_copy=False
+    config_path = get_current_project_file('config.yaml', seed_template=paths.DEFAULT_MASTER, auto_copy=False)
+    
+    # 真正檢查硬碟檔案是否存在
+    if not os.path.exists(config_path):
+        # 檔案不存在，回傳空字典（或只含基本結構），並標記為 False
+        return {}, False
+        
+    # 檔案存在，正常載入
+    data = load_yaml(config_path)
+    return data, True
 
 def save_config(data):
     path = get_current_project_file('config.yaml', seed_template=paths.DEFAULT_MASTER)
