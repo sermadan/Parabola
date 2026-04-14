@@ -55,11 +55,12 @@
 {% endblock %}
 
 {% block content %}
+<!--
 <div class="debug-bar">
     <strong>[ DEBUG MONITOR ]</strong> &nbsp; 
     USER_ID: <span style="color: #f1c40f;">{{ user_id or 'NONE' }}</span> &nbsp; | &nbsp; 
     CURRENT: <span style="color: #f1c40f;">{{ current or 'NONE' }}</span>
-</div>
+</div> -->
 
 <div class="announcement-bar">
     <div style="font-size: 1.4rem;">⚠️</div>
@@ -128,41 +129,43 @@
                             <span class="glass-pill" style="font-size: 0.7rem; padding: 2px 8px; opacity: 0.8;">📄 {{ file }}</span>
                             {% endfor %}
                         {% else %}
-                             <div class="drag-hint" style="font-size: 0.65rem;" data-i18n="label_empty_workspace">Empty Workspace</div>
+                            <div class="drag-hint" style="font-size: 0.65rem;" data-i18n="label_empty_workspace">Empty Workspace</div>
                         {% endif %}
                     </div>
                 </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10;">
-                <a href="{{ url_for('views.select_project', name=p) }}" 
-                class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" 
-                style="flex: 1; text-decoration: none;">
-                    <span data-i18n="btn_switch_to">Switch</span>
-                </a>
-                
-                <div class="action-group">
-                    <button type="button" 
-                            class="btn btn-outline download-btn" 
-                            style="width: 38px; padding: 0; justify-content: center;"
-                            data-project="{{ p }}"
-                            data-files='{{ project_files[p] | tojson if project_files and p in project_files else "[]" }}'
-                            title="Download"
-                            data-i18n="btn_download">
-                    </button>
-
-                    <form action="{{ url_for('views.delete_project', name=p) }}" method="POST" 
-                        onsubmit="return confirm('⚠️ DANGER: Delete project [{{ p }}] permanently?');" 
-                        style="margin: 0; display: inline-flex;">
-                        <button type="submit" 
-                                class="btn btn-outline btn-delete-sm" 
+                <div style="margin-top: 20px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10;">
+                    <a href="{{ url_for('views.select_project', name=p) }}" 
+                    class="btn {% if p == current %}btn-save{% else %}btn-outline{% endif %}" 
+                    style="flex: 1; text-decoration: none; text-align: center;">
+                        <span data-i18n="btn_switch_to">Switch</span>
+                    </a>
+                    
+                    <div class="action-group">
+                        <button type="button" 
+                                class="btn btn-outline download-btn" 
                                 style="width: 38px; padding: 0; justify-content: center;"
-                                title="Delete" 
-                                data-i18n="btn_trash">
+                                data-project="{{ p }}"
+                                data-i18n="btn_download"
+                                data-files='{{ project_files[p] | tojson if project_files and p in project_files else "[]" }}'
+                                title="Download">
+                            <i class="fas fa-download"></i>
                         </button>
-                    </form>
+
+                        <form action="{{ url_for('views.delete_project', name=p) }}" method="POST" 
+                            onsubmit="return confirm('⚠️ DANGER: Delete project [{{ p }}] permanently?');" 
+                            style="margin: 0; display: inline-flex;">
+                            <button type="submit" 
+                                    class="btn btn-outline btn-delete-sm" 
+                                    style="width: 38px; padding: 0; justify-content: center;"
+                                    data-i18n="btn_trash"
+                                    title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
+            </div> {% endfor %}
         </div>
     </main>
 </div>

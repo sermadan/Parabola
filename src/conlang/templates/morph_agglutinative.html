@@ -21,14 +21,14 @@
         .side-tab-btn.active { background: var(--primary); color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3); }
         .syntax-main-content { overflow-y: auto; padding-right: 20px; padding-bottom: 80px; scroll-behavior: smooth; }
         
-        /* Ordering 拖拽區樣式 */
+        /* Ordering 拖拽區 */
         .order-pool { min-height: 100px; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: rgba(var(--text-rgb), 0.03); border: 2px dashed rgba(var(--text-rgb), 0.1); border-radius: 16px; margin-bottom: 20px; }
         .slot-pill { padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; cursor: grab; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); user-select: none; }
         .slot-pill:active { cursor: grabbing; }
         .slot-pill.stem { border: 2px solid var(--primary); background: rgba(var(--primary-rgb), 0.05); }
         .slot-ghost { opacity: 0.4; background: var(--secondary); }
 
-        /* 詞綴詳情卡片 */
+        /* 卡片與內容 */
         .slot-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
         .affix-row { border-bottom: 1px solid rgba(var(--text-rgb), 0.05); padding: 15px 0; }
         .affix-row:last-child { border-bottom: none; }
@@ -46,11 +46,11 @@
 {{ session_guard() }}
 
 <div class="tabs">
-    <button type="button" class="tab-btn active" data-tab="ordering" onclick="switchMainTab('ordering')">
-        <span data-i18n="label_morph_ordering">詞綴排列順序</span>
+    <button type="button" class="tab-btn" data-tab="ordering" onclick="switchMainTab('ordering')">
+        <span data-i18n="label_morph_ordering">排列順序</span>
     </button>
     <button type="button" class="tab-btn" data-tab="affixes" onclick="switchMainTab('affixes')">
-        <span data-i18n="label_morph_affixes">詞綴內容設定</span>
+        <span data-i18n="label_morph_affixes">詞綴設定</span>
     </button>
 </div>
 
@@ -72,14 +72,12 @@
                     <div class="slot-card">
                         <div class="label-caps" style="margin-bottom:12px;" data-i18n="label_morph_ordering"></div>
                         <p class="text-sub" style="margin-bottom:20px; font-size: 0.85rem;" data-i18n="hint_stem_position"></p>
-                        
                         <div id="order-pool-{{ sec }}" class="order-pool"></div>
-                        
                         <input type="hidden" name="ordering|{{ sec }}" id="input-order-{{ sec }}">
                     </div>
                 </div>
 
-                <div class="tab-pane-content" data-pane="affixes" style="display: none;">
+                <div class="tab-pane-content" data-pane="affixes">
                     <div id="affix-container-{{ sec }}"></div>
                 </div>
 
@@ -90,73 +88,66 @@
 </form>
 
 <script>
-    // 初始化數據
     const FULL_CONFIG = {{ config | tojson }};
     const SAVED_DATA = FULL_CONFIG.morphology?.agglutinative || {};
     const SAVED_ORDER = FULL_CONFIG.morphology?.ordering || {};
 
-    // 切換 Top Tab
+    // 1. 切換頂部 Tab (排序 / 內容)
     window.switchMainTab = (tabId) => {
+        localStorage.setItem('last_agglut_main_tab', tabId);
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-        document.querySelectorAll('.tab-pane-content').forEach(p => p.style.display = (p.dataset.pane === tabId) ? 'block' : 'none');
+        document.querySelectorAll('.tab-pane-content').forEach(p => {
+            p.style.display = (p.dataset.pane === tabId) ? 'block' : 'none';
+        });
     };
 
-    // 切換側邊欄 (Noun/Verb/Adj)
+    // 2. 切換側邊欄 (名 / 動 / 形)
     function handleSideTabClick(secId) {
         localStorage.setItem('last_agglut_side_tab', secId);
         document.querySelectorAll('.side-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === secId));
         document.querySelectorAll('.section-view').forEach(view => view.classList.toggle('active', view.id === `view-${secId}`));
-        
-        renderOrdering(secId);
-        renderAffixDetails(secId);
     }
 
-    /**
-     * 核心：渲染排序區域並自動產生預設順序
-     */
+    // 3. 渲染所有資料 (初始化時調用)
+    function renderAllSections() {
+        ['sec_noun_syntax', 'sec_verb_syntax', 'sec_adj_syntax'].forEach(secId => {
+            renderOrdering(secId);
+            renderAffixDetails(secId);
+        });
+    }
+
     function renderOrdering(secId) {
         const pool = document.getElementById(`order-pool-${secId}`);
         const inputHidden = document.getElementById(`input-order-${secId}`);
-        if (!pool || !inputHidden) return;
+        if (!pool) return;
 
-        // 1. 抓取當前範疇下已啟用的 Feature
         const activeFeats = Object.entries(FULL_CONFIG[secId]?.bools || {})
             .filter(([_, on]) => on === true).map(([id]) => id);
 
-        // 2. 獲取順序：若無資料則預設為 ['STEM', ...activeFeats]
         let order = SAVED_ORDER[secId];
-        if (!order || !Array.isArray(order) || order.length === 0) {
+        if (!order || !Array.isArray(order)) {
             order = ['STEM', ...activeFeats];
         } else {
-            // 同步邏輯：移除已關閉特徵，補上新特徵
             order = order.filter(id => id === 'STEM' || activeFeats.includes(id));
             activeFeats.forEach(f => { if(!order.includes(f)) order.push(f); });
         }
 
-        // 3. 渲染 UI
         pool.innerHTML = order.map(id => `
             <div class="slot-pill ${id === 'STEM' ? 'stem' : ''}" data-id="${id}">
                 <i class="fas ${id === 'STEM' ? 'fa-dna' : 'fa-box-open'}"></i>
-                <strong data-i18n="${id === 'STEM' ? 'label_stem' : id}">
-                    ${id === 'STEM' ? '詞根' : id}
-                </strong>
+                <strong data-i18n="${id === 'STEM' ? 'label_stem' : id}">${id === 'STEM' ? '詞根' : id}</strong>
             </div>
         `).join('');
 
-        // 4. 啟動 Sortable 並綁定同步
         new Sortable(pool, { 
             animation: 150, 
             ghostClass: 'slot-ghost',
             onEnd: () => syncOrderData(secId)
         });
 
-        // 5. 初始同步：確保 hidden input 有值可以被 submit
         syncOrderData(secId);
-        
-        if (window.applyTranslations) window.applyTranslations();
     }
 
-    // 同步 Pill 順序至 Hidden Input
     function syncOrderData(secId) {
         const pool = document.getElementById(`order-pool-${secId}`);
         const inputHidden = document.getElementById(`input-order-${secId}`);
@@ -164,11 +155,9 @@
         inputHidden.value = JSON.stringify(items);
     }
 
-    /**
-     * 渲染詞綴詳情區
-     */
     function renderAffixDetails(secId) {
         const container = document.getElementById(`affix-container-${secId}`);
+        if (!container) return;
         const activeFeats = Object.entries(FULL_CONFIG[secId]?.bools || {})
             .filter(([_, on]) => on === true).map(([id]) => id);
 
@@ -183,14 +172,11 @@
                 </div>
             `;
         }).join('');
-        
-        if (window.applyTranslations) window.applyTranslations();
     }
 
     function renderAffixRow(sec, feat, opt, placeholder) {
         const key = opt.value || opt;
         const saved = SAVED_DATA[sec]?.[feat]?.[key] || { base: '', rules: [] };
-        
         return `
             <div class="affix-row">
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -199,7 +185,7 @@
                            style="flex:1" value="${saved.base}" placeholder="${placeholder}">
                     <button type="button" class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" 
                             onclick="addRule('${sec}','${feat}','${key}')">
-                        <i class="fas fa-plus"></i> <span data-i18n="btn_add_rule"></span>
+                        <i class="fas fa-plus"></i> <span data-i18n="btn_add_rule">增加規則</span>
                     </button>
                 </div>
                 <div id="rules-${sec}-${feat}-${key}">
@@ -222,8 +208,7 @@
                 <input type="text" name="agglut|${sec}|${feat}|${opt}|cond[]" class="input-mini cond-input" 
                        style="width:100px; display:${isCustom?'block':'none'}" value="${data.cond}">
                 <span>→</span>
-                <input type="text" name="agglut|${sec}|${feat}|${opt}|alt[]" class="input-mini" style="width:120px;" 
-                       value="${data.alt}">
+                <input type="text" name="agglut|${sec}|${feat}|${opt}|alt[]" class="input-mini" style="width:120px;" value="${data.alt}">
                 <button type="button" class="btn-icon" onclick="this.parentElement.remove()" style="margin-left:auto; color:var(--danger);">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -233,13 +218,8 @@
 
     function toggleRuleType(sel) {
         const input = sel.parentElement.querySelector('.cond-input');
-        if (sel.value === 'custom') {
-            input.style.display = 'block';
-            input.value = '';
-        } else {
-            input.style.display = 'none';
-            input.value = sel.value;
-        }
+        if (sel.value === 'custom') { input.style.display = 'block'; input.value = ''; }
+        else { input.style.display = 'none'; input.value = sel.value; }
     }
 
     function addRule(sec, feat, opt) {
@@ -253,10 +233,25 @@
         return Array.isArray(sets) ? sets : [];
     }
 
-    // 初始化加載
+    // 4. 初始化執行入口
     document.addEventListener('DOMContentLoaded', () => {
-        const lastTab = localStorage.getItem('last_agglut_side_tab') || 'sec_noun_syntax';
-        handleSideTabClick(lastTab);
+        const initApp = () => {
+            // 確保翻譯函式已經加載
+            if (typeof window.applyTranslations === 'function') {
+                renderAllSections();
+
+                const lastSide = localStorage.getItem('last_agglut_side_tab') || 'sec_noun_syntax';
+                handleSideTabClick(lastSide);
+
+                const lastMain = localStorage.getItem('last_agglut_main_tab') || 'ordering';
+                switchMainTab(lastMain);
+
+                window.applyTranslations();
+            } else {
+                setTimeout(initApp, 50); // 遞迴等待
+            }
+        };
+        initApp();
     });
 </script>
 

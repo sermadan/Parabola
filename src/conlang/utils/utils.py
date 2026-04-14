@@ -1,11 +1,11 @@
 import os
 import yaml
-import shutil
 from flask import session
 import conlang.paths as paths
 
 def load_yaml(path):
-    if not os.path.exists(path): 
+    """安全載入 YAML 檔案"""
+    if not path or not os.path.exists(path): 
         return {}
     with open(path, 'r', encoding='utf-8') as f:
         try:
@@ -14,53 +14,67 @@ def load_yaml(path):
             return {}
 
 def save_yaml(path, data):
-    with open(path, 'w', encoding='utf-8') as f:
-        yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
-
-def get_current_project_file(filename, seed_template=None, auto_copy=True):
     """
-    獲取檔案路徑。
-    auto_copy: 如果為 False，則不執行 shutil.copy
+    安全儲存 YAML，確保路徑合法且自動建立資料夾。
+    防止 Windows Console 寫入錯誤。
+    """
+    if not path or not isinstance(path, str):
+        return
+
+    try:
+        abs_path = os.path.abspath(path)
+        folder = os.path.dirname(abs_path)
+        if folder:
+            os.makedirs(folder, exist_ok=True)
+
+        with open(abs_path, 'w', encoding='utf-8') as f:
+            yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
+    except Exception as e:
+        print(f"DEBUG: save_yaml 發生錯誤: {e}")
+
+def get_current_project_file(filename):
+    """
+    獲取專案檔案路徑。
+    如果檔案不存在，則建立一個完全空的 {} YAML 檔案。
     """
     p_name = session.get('current_project')
     if not p_name:
-        return seed_template if seed_template else ""
+        return ""
         
     project_dir = paths.get_project_dir(p_name)
     target_path = os.path.join(project_dir, filename)
     
-    # 只有當檔案不存在、有提供範本、且 auto_copy 為 True 時才拷貝
-    if not os.path.exists(target_path) and seed_template and os.path.exists(seed_template):
-        if auto_copy:
-            shutil.copy(seed_template, target_path)
-        else:
-            # 不拷貝，直接返回路徑，讓外層知道檔案目前還不存在
-            return target_path
-            
+    # 如果專案目錄下沒這個檔案，就初始化一個空的 YAML
+    if not os.path.exists(target_path):
+        save_yaml(target_path, {})
+        
     return target_path
 
 def get_config():
-    # 這裡加入 auto_copy=False
-    config_path = get_current_project_file('config.yaml', seed_template=paths.DEFAULT_MASTER, auto_copy=False)
+    """
+    獲取專案 config.yaml。
+    回傳 (data, path)
+    """
+    # 移除原本報錯的 seed_template 參數
+    path = get_current_project_file('config.yaml')
     
-    # 真正檢查硬碟檔案是否存在
-    if not os.path.exists(config_path):
-        # 檔案不存在，回傳空字典（或只含基本結構），並標記為 False
-        return {}, False
+    if not path:
+        return {}, ""
         
-    # 檔案存在，正常載入
-    data = load_yaml(config_path)
-    return data, True
+    data = load_yaml(path)
+    return data, path
 
 def save_config(data):
-    path = get_current_project_file('config.yaml', seed_template=paths.DEFAULT_MASTER)
+    """儲存 config.yaml"""
+    path = get_current_project_file('config.yaml')
     save_yaml(path, data)
 
 def get_lexicon():
-    """獲取詞典資料"""
+    """獲取詞典資料 dict.yaml"""
     path = get_current_project_file('dict.yaml')
     return load_yaml(path), path
 
 def load_ipa_data():
-    """IPA 資料通常是唯讀的系統資料"""
+    """載入系統唯讀的 IPA 資料"""
+    # 這裡依然使用 paths.DEFAULT_IPA，它是系統路徑，不是專案路徑
     return load_yaml(paths.DEFAULT_IPA)

@@ -7,6 +7,10 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <style>
+        /* 只加這一個樣式，讓音標看起來可以點擊，不影響按鈕 */
+        .phonetic { cursor: pointer; }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -139,13 +143,10 @@
         .then(json => {
             if (json.success) {
                 row.querySelector('.word-main').innerText = data.word;
-                
                 const posTag = row.querySelector('.pos-tag');
                 posTag.setAttribute('data-i18n', `pos_${data.pos}`);
-                
                 row.querySelector('.word-sub').innerText = data.translation;
                 row.querySelector('.phonetic').innerText = `/${data.ipa}/`;
-                
                 const notesView = row.querySelector('.word-notes');
                 if (notesView) notesView.innerText = data.notes;
                 

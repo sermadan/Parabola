@@ -1,9 +1,6 @@
 "category","key","en","zh"
 "app","app_title","Parabola","Parabola"
 
-"category","key","en","zh"
-"app","app_title","Parabola","Parabola"
-
 "nav","nav_guide","Instructions","使用說明"
 "nav","nav_syntax_config","Syntax Configuration","語法配置"
 "nav","nav_ipa_system","IPA System","音標系統"
@@ -48,9 +45,10 @@
 "ui_label","label_cat_code","Category Code","類別代碼"
 "ui_label","label_comment","Extra Comment","註解"
 "ui_label","label_lexicon_sandbox","Lexicon Sandbox","詞彙沙盒"
-"ui_label","label_local_workspace","Local Workspace","本地工作區"
+"ui_label","label_local_workspace","Local Workspace","本地工作區"   
 "ui_label","label_import_workspace","Import Workspace","匯入工作區"
 "ui_label","label_restore_folder","Restore Folder","還原資料夾"
+"ui_label","label_syllable_pattern","Syllable Pattern","音節樣式"
 
 "ui_morph","label_morph_ordering","Morpheme Ordering","詞綴排列順序"
 "ui_morph","label_morph_affixes","Affix Details","詞綴內容設定"
@@ -98,6 +96,7 @@
 "ui_dict","dict_count","Words","個單字"
 "ui_dict","hint_click_save","Click to Save to Dictionary","點擊儲存至字典"
 "ui_dict","status_added_lexicon","✓ Added to Lexicon","✓ 已加入詞庫"
+"ui_dict","dict_notes","Notes","註釋"
 
 "ui_morph","label_stem","STEM","基本詞根"
 "ui_morph","placeholder_base_marker","Base affix...","填入基礎詞綴..."
@@ -128,6 +127,20 @@
 "hint","hint_stem_position","Drag STEM to set prefix/suffix positions.","拖動基本詞根以決定前綴或後綴位置。"
 
 "placeholder","placeholder_base_marker","Base marker","基本形式"
+
+"pos","pos_noun","Noun","名詞"
+"pos","pos_verb","Verb","動詞"
+"pos","pos_adj","Adjective","形容詞"
+"pos","pos_adv","Adverb","副詞"
+"pos","pos_pron","Pronoun","代名詞"
+"pos","pos_prep","Preposition","介系詞"
+"pos","pos_conj","Conjunction","連詞"
+"pos","pos_det","Determiner","限定詞"
+"pos","pos_num","Numeral","數詞"
+"pos","pos_int","Interjection","感嘆詞"
+"pos","pos_aux","Auxiliary","助動詞"
+"pos","pos_part","Particle","助詞"
+"pos","pos_punct","Punctuation","標點符號"
 
 "ling_core","sec_morphology_type","Morphological System","形態類型系統"
 "ling_core","sec_universal_features","Universal Features","通用特性"
@@ -221,8 +234,8 @@
 "ling_opt","gen_masculine","Masculine","陽性"
 "ling_opt","gen_feminine","Feminine","陰性"
 "ling_opt","gen_neuter","Neuter","中性"
-"ling_opt","gen_animate","Animate","有生性"
-"ling_opt","gen_inanimate","Inanimate","無生性"
+"ling_opt","gen_animate","Animate","有生"
+"ling_opt","gen_inanimate","Inanimate","無生"
 
 "ling_opt","num_singular","Singular","單數"
 "ling_opt","num_dual","Dual","雙數"
