@@ -1,4 +1,5 @@
 "category","key","en","zh","uk"
+
 "app","app_title","Parabola","Parabola","Parabola"
 
 "nav","nav_guide","Instructions","使用說明","Інструкції"
@@ -38,7 +39,7 @@
 "ui_label","label_ipa_custom_categories","Custom Categories","自訂分類","Власні категорії"
 "ui_label","label_sort","Sort","排序","Сортування"
 "ui_label","label_settings","Settings","設定","Налаштування"
-"ui_label","label_choose","Choose","選擇",Обрати"
+"ui_label","label_choose","Choose","選擇","Обрати"
 "ui_label","label_frequency","Frequency","出現頻率","Частота"
 "ui_label","label_setup_chart","Setup Chart","設定表格","Налаштувати таблицю"
 "ui_label","label_choose_local","Choose Local Project","選擇本地專案","Вибрати локальний проєкт"
