@@ -89,10 +89,11 @@
         <header class="top-bar">
             <div class="page-title-area">{% block page_name %}{% endblock %}</div>
             <div class="actions">
-                <div class="lang-switcher">
-                    <button type="button" onclick="updateLangMode('zh')" class="btn-lang" id="btn-zh">中</button>
-                    <button type="button" onclick="updateLangMode('en')" class="btn-lang" id="btn-en">EN</button>
-                </div>
+            <div class="lang-switcher">
+                <button type="button" onclick="updateLangMode('zh')" class="btn-lang" id="btn-zh">中</button>
+                <button type="button" onclick="updateLangMode('en')" class="btn-lang" id="btn-en">EN</button>
+                <button type="button" onclick="updateLangMode('uk')" class="btn-lang" id="btn-uk">УКР</button>
+            </div>
                 {% block actions %}{% endblock %}
             </div>
         </header>
