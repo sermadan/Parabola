@@ -326,21 +326,23 @@ def view_dictionary():
 # --- 4. 使用說明 (Guide) ---
 @views_bp.route('/guide')
 def show_guide():
-    # 獲取目前 session 語系，預設為 zh (繁體中文)
-    lang = session.get('lang', 'zh')
+    # 優先從網址 URL 參數讀取 ?lang=，預設為 zh
+    lang = request.args.get('lang', 'zh')
     
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     docs_dir = os.path.join(base_dir, 'docs')
     
-    # 組合檔案名稱，例如 guide_zh.md
+    # 組合檔案名稱，例如 guide_uk.md
     filename = f"guide_{lang}.md"
     md_path = os.path.join(docs_dir, filename)
     
-    # 安全檢查：如果檔案不存在，預設回傳中文版；若中文版也不存在，則報錯
+    # 安全降級機制 (Fallback)：找不到指定語系時，先退回 en，再退回 zh
     if not os.path.exists(md_path):
-        md_path = os.path.join(docs_dir, 'guide_zh.md')
+        md_path = os.path.join(docs_dir, 'guide_en.md')
         if not os.path.exists(md_path):
-            return "Guide file not found.", 404
+            md_path = os.path.join(docs_dir, 'guide_zh.md')
+            if not os.path.exists(md_path):
+                return "Guide file not found.", 404
     
     with open(md_path, 'r', encoding='utf-8') as f:
         md_text = f.read()

@@ -215,6 +215,18 @@ function updateLangMode(mode) {
     currentLang = mode;
     localStorage.setItem('conlang-pref-lang', mode);
 
+    // 更新頁面上所有引導頁（/guide）連結的 query 參數
+    updateGuideLinks(mode);
+
+    // 若當前位於 /guide 頁面，且 URL 上的 lang 參數不同，則直接刷新頁面載入對應 Markdown
+    if (window.location.pathname === '/guide') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('lang') !== mode) {
+            window.location.href = `/guide?lang=${mode}`;
+            return;
+        }
+    }
+
     applyTranslations();
     updateLangButtonUI(mode);
 }
@@ -235,6 +247,13 @@ function updateLangButtonUI(mode) {
     }
 }
 
+// 自動將所有的 /guide 連結補上語系參數
+function updateGuideLinks(mode) {
+    document.querySelectorAll('a[href^="/guide"]').forEach(link => {
+        link.href = `/guide?lang=${mode}`;
+    });
+}
+
 
 // ===============================
 // 7️⃣  Debug 文字產生（找不到翻譯時）
@@ -251,8 +270,14 @@ function generateDebugText(key) {
 // 8️⃣  初始化
 // ===============================
 document.addEventListener('DOMContentLoaded', () => {
-    currentLang = localStorage.getItem('conlang-pref-lang') || 'zh';
+    // 優先看網址有無 ?lang= 參數，沒有才拿 localStorage，最後預設 'zh'
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get('lang');
 
+    currentLang = langFromUrl || localStorage.getItem('conlang-pref-lang') || 'zh';
+    localStorage.setItem('conlang-pref-lang', currentLang);
+
+    updateGuideLinks(currentLang);
     updateLangButtonUI(currentLang);
     loadTranslations();
 });

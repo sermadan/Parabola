@@ -17,19 +17,18 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- 載入 MathJax 腳本 -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+<!-- MathJax 3 配置（必須放在載入腳本之前） -->
 <script>
     window.MathJax = {
         tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']],  // 支援 $ 內聯公式
+            inlineMath: [['$', '$'], ['\\(', '\\)']],   // 支援 $ 內聯公式
             displayMath: [['$$', '$$'], ['\\[', '\\]']], // 支援 $$ 區塊公式
-            processEscapes: True
+            processEscapes: true                         // 修正：Python True -> JS true
         }
     };
 </script>
+<!-- 載入最新版 MathJax 腳本（移除安全的 polyfill.io） -->
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}
 
 {% block content %}
