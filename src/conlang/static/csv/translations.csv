@@ -337,7 +337,7 @@
 "ipa_place","ipa_place_palatal","Palatal","硬腭音","Палатальні"
 "ipa_place","ipa_place_velar","Velar","軟腭音","Велярні"
 "ipa_place","ipa_place_uvular","Uvular","小舌音","Увулярні"
-"ipa_place","ipa_place_glottal","Glottal","聲門音","Глотальні"
+"ipa_place","ipa_place_glottal","Glottal","聲門音","Гортанні"
 
 "ipa_manner","ipa_manner_plosive","Plosive","塞音","Проривні"
 "ipa_manner","ipa_manner_affricate","Affricate","塞擦音","Африкати"
