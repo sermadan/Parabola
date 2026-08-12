@@ -3,7 +3,7 @@
 // ===============================
 
 let i18nData = {};     // 原始分類結構
-let i18nFlat = {};     // 扁平快取 (key -> {zh,en})
+let i18nFlat = {};     // 扁平快取 (key -> {zh, en, uk, ...})
 let currentLang = 'zh';
 let isTranslating = false;
 
@@ -33,36 +33,90 @@ async function loadTranslations() {
 
 
 // ===============================
-// 2️⃣  解析 CSV
-// 格式："cat","key","en","zh"
+// 2️⃣  解析 CSV (自動解析 Header 與多語系欄位)
 // ===============================
 function parseCSV(data) {
+    const cleanData = data.replace(/^\uFEFF/, '');
+    const rows = parseCSVRows(cleanData);
 
-    const lines = data.replace(/^\uFEFF/, '').split(/\r?\n/);
+    if (rows.length < 2) return;
+
+    // 自動抓取第一列 Header: ["category", "key", "en", "zh", "uk", ...]
+    const headers = rows[0].map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+    
+    // 相容 "category" 與 "cat"
+    const catIdx = headers.findIndex(h => h === 'category' || h === 'cat');
+    const keyIdx = headers.indexOf('key');
+
+    if (catIdx === -1 || keyIdx === -1) {
+        console.error("❌ CSV 格式錯誤：必須包含 'category' (或 'cat') 與 'key' 欄位");
+        return;
+    }
 
     i18nData = {};
     i18nFlat = {};
 
-    lines.forEach((line, index) => {
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        
+        // 過濾全空行
+        if (!row || row.length === 0 || row.every(cell => !cell.trim())) continue;
 
-        const trimmed = line.trim();
-        if (!trimmed || index === 0) return;
+        const category = row[catIdx] ? row[catIdx].trim() : '';
+        const key = row[keyIdx] ? row[keyIdx].trim() : '';
 
-        const columns = trimmed
-            .replace(/^"|"$/g, '')
-            .split('","');
+        if (!key) continue;
 
-        if (columns.length < 4) return;
+        const langMap = {};
+        headers.forEach((header, idx) => {
+            if (idx !== catIdx && idx !== keyIdx && row[idx] !== undefined) {
+                langMap[header] = row[idx];
+            }
+        });
 
-        const [category, key, en, zh] = columns;
-
-        // 建立分類結構
+        // 建立分類結構與扁平快取
         if (!i18nData[category]) i18nData[category] = {};
-        i18nData[category][key] = { en, zh };
+        i18nData[category][key] = langMap;
+        i18nFlat[key] = langMap;
+    }
+}
 
-        // 建立快取結構（效能用）
-        i18nFlat[key] = { en, zh };
-    });
+// 標準 CSV 解析器（支援逗號、引號、空行與換行）
+function parseCSVRows(text) {
+    const result = [];
+    let row = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                field += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            row.push(field);
+            field = '';
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            if (char === '\r' && nextChar === '\n') i++;
+            row.push(field);
+            result.push(row);
+            row = [];
+            field = '';
+        } else {
+            field += char;
+        }
+    }
+    if (field || row.length > 0) {
+        row.push(field);
+        result.push(row);
+    }
+    return result;
 }
 
 
@@ -70,11 +124,11 @@ function parseCSV(data) {
 // 3️⃣  核心翻譯函式 (JS 用)
 // ===============================
 function t(key, params = {}) {
-
     const entry = i18nFlat[key];
     if (!entry) return key;
 
-    let text = entry[currentLang] || key;
+    // 找不到該語系時，降級順序：指定語言 -> zh -> en -> key 本身
+    let text = entry[currentLang] || entry['zh'] || entry['en'] || key;
 
     // 參數替換 {name}
     Object.keys(params).forEach(p => {
@@ -89,14 +143,13 @@ function t(key, params = {}) {
 // 4️⃣  套用到 HTML
 // ===============================
 function applyTranslations() {
-
     if (!Object.keys(i18nFlat).length) return;
     if (isTranslating) return;
 
     isTranslating = true;
 
+    // 1. 文字內容套用 [data-i18n="key"]
     document.querySelectorAll('[data-i18n]').forEach(el => {
-
         const key = el.dataset.i18n;
         if (!key) return;
 
@@ -105,20 +158,26 @@ function applyTranslations() {
             ? translated
             : generateDebugText(key);
 
-        // 更新文字
         if (el.textContent !== displayText) {
             el.textContent = displayText;
         }
 
-        // 如果在 <option> 裡
         const parentOption = el.closest('option');
         if (parentOption) {
             parentOption.text = displayText;
             parentOption.label = displayText;
         }
+    });
 
-        // placeholder 支援
-        if (el.hasAttribute('data-i18n-placeholder')) {
+    // 2. Placeholder 獨立套用 [data-i18n-placeholder="key"]
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (!key) return;
+
+        const translated = t(key);
+        const displayText = translated !== key ? translated : generateDebugText(key);
+
+        if (el.placeholder !== displayText) {
             el.placeholder = displayText;
         }
     });
@@ -133,9 +192,7 @@ function applyTranslations() {
 // 5️⃣  DOM 監聽（動態元素）
 // ===============================
 function observeDOM() {
-
     const observer = new MutationObserver((mutations) => {
-
         if (isTranslating) return;
 
         const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
@@ -155,7 +212,6 @@ function observeDOM() {
 // 6️⃣  語言切換
 // ===============================
 function updateLangMode(mode) {
-
     currentLang = mode;
     localStorage.setItem('conlang-pref-lang', mode);
 
@@ -165,7 +221,6 @@ function updateLangMode(mode) {
 
 
 function updateLangButtonUI(mode) {
-
     document.querySelectorAll('.btn-lang').forEach(btn => {
         btn.style.background = 'transparent';
         btn.style.color = 'var(--text-sub)';
@@ -196,18 +251,15 @@ function generateDebugText(key) {
 // 8️⃣  初始化
 // ===============================
 document.addEventListener('DOMContentLoaded', () => {
-
-    currentLang =
-        localStorage.getItem('conlang-pref-lang') || 'zh';
+    currentLang = localStorage.getItem('conlang-pref-lang') || 'zh';
 
     updateLangButtonUI(currentLang);
-
     loadTranslations();
 });
 
 
 // ===============================
-// 9️⃣  對外開放 (讓別的 JS 可用)
+// 9️⃣  對外開放
 // ===============================
 window.t = t;
 window.updateLangMode = updateLangMode;
